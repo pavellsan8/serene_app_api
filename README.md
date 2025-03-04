@@ -5,8 +5,8 @@ SereneAPI is a backend API built with Flask to support the Serene application. I
 ## Installation
 1. Clone the repository:
    ```bash
-   git clone https://github.com/username/SereneAPI.git
-   cd SereneAPI
+   git clone https://github.com/pavellsan8/serene_app_api
+   cd serene_app_api
    ```
 2. Create and activate a virtual environment:
    ```bash
