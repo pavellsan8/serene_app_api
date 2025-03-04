@@ -1,0 +1,11 @@
+# Virtual environment
+.venv/
+venv/
+
+# Flask instance config
+instance/
+
+# Python bytecode cache
+*.pyc
+__pycache__/
+
