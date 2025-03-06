@@ -13,20 +13,21 @@ from schemas.authentication_schema import *
 from werkzeug.security import check_password_hash
 
 class userRegisterResource(Resource):
-    def hash_password(self, password):
-        self.hashed_password = generate_password_hash(password)
-        return self.hashed_password
-    
     def post(self):
         try:
             data = userRegisterSchema().load(request.get_json())
-        except Exception as e:
-            return ErrorMessageUtils.handle_error(userLoginResource, e)
+        except:
+            return ErrorMessageUtils.bad_request
         
         nameRegis = data['name']
         emailRegis = data['email']
         passwordRegis = data['password']
         dateRegis = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
+
+        passwordHash = MtUsersModel.hash_password(passwordRegis)
+        passwordDb_clean = passwordHash.replace("scrypt:32768:8:1$", "", 1)
+
+        print(nameRegis, emailRegis, passwordRegis, passwordDb_clean, dateRegis)
 
         # save to database
         # checkEmail = MtUsersModel.getEmailFirst(emailRegis)
@@ -34,18 +35,18 @@ class userRegisterResource(Resource):
         #     userRegisData = MtUsersModel(
         #         userName = nameRegis, 
         #         userEmail = emailRegis, 
-        #         userPassword = passwordRegis,
+        #         userPassword = passwordDb_clean,
         #         userCreatedAt = dateRegis,
         #     )
 
-        try:
-            # MtUsersModel.saveToDb(userRegisData)
-            return {
-                "status": 200,
-                "message": "Successfully registered",
-            }
-        except:
-            return ErrorMessageUtils.bad_request("Failed to register")
+            # try:
+            #     MtUsersModel.saveToDb(userRegisData)
+        return {
+            "status": 200,
+            "message": "Successfully registered",
+        }
+            # except:
+            #     return ErrorMessageUtils.bad_request("Failed to register")
         
         # else:
         #     return ErrorMessageUtils.bad_request("Email already registered. Please use another email.")
@@ -58,7 +59,11 @@ class userLoginResource(Resource):
             return ErrorMessageUtils.bad_request
         
         emailLogin = data["email"]
-        passwordLogin = data["password"]
+        passwordInput = data["password"]
+        passwordDb = MtUsersModel.hash_password(passwordInput)
+        passwordDb_clean = passwordDb.replace("scrypt:32768:8:1$", "", 1)
+
+        print(emailLogin, passwordInput, passwordDb_clean)
 
         # find user data in database
         # checkUser = MtUsersModel.getEmailFirst(emailLogin)
@@ -69,37 +74,36 @@ class userLoginResource(Resource):
 
         #     if not passwordLoginCheck:
         #         return ErrorMessageUtils.bad_request("Authentication failed. Ensure the correct password.")
-            
         #     else:
-                # create access token and refresh token
+        #         create access token and refresh token
         expiresAccessToken = timedelta(days=1)
         expiresRefreshToken = timedelta(days=90)
 
         access_token = create_access_token(
-            identity=emailLogin,  # Just use the email string directly
+            identity=emailLogin,
             expires_delta=expiresAccessToken,
         )
 
         refresh_token = create_refresh_token(
-            identity=emailLogin,  # Just use the email string directly
+            identity=emailLogin,
             expires_delta=expiresRefreshToken,
         )
                 
-        try:
-            # userId = checkUser.userId
-            # userEmail = checkUser.userEmail
-            # MtUsersModel.updateLoginTime(userId, userEmail)
-            return {
-                "status" : 200,
-                "message" : "Successfully login",
-                "data" : {
-                    "email" : emailLogin,
-                    "access_token" : access_token,
-                    "refresh_token" : refresh_token,
-                }
+        #     try:
+        #         userId = checkUser.userId
+        #         userEmail = checkUser.userEmail
+        #         MtUsersModel.updateLoginTime(userId, userEmail)
+        return {
+            "status" : 200,
+            "message" : "Successfully login",
+            "data" : {
+                "email" : emailLogin,
+                "access_token" : access_token,
+                "refresh_token" : refresh_token,
             }
-        except Exception as e:
-            return ErrorMessageUtils.bad_request("Login failed. Please try again.")
+        }
+        #     except Exception as e:
+        #         return ErrorMessageUtils.bad_request("Login failed. Please try again.")
                 
         # else:
         #     return ErrorMessageUtils.not_found("Username not found or not registered.")
@@ -149,13 +153,33 @@ class sendEmailOtpVerificationResource(Resource):
             return {
                 "status": 200,
                 "message": "Email OTP verification has been sent. Please check your email.",
-                "email": email,
                 "otp_code": otp_code
             }
 
         except Exception as e:
             print("Validation error:", str(e))
             return ErrorMessageUtils.bad_request("Please provide a valid email address.")
+        
+class resetPasswordResource(Resource):
+    def post(self):
+        try:
+            data = userLoginSchema().load(request.get_json())
+        except:
+            return ErrorMessageUtils.bad_request
+
+        userEmail = data['email']
+        newPassword = data['password']
+
+        try:
+            # MtUsersModel.updateUserPassword(userEmail, newPassword)
+            print(userEmail)
+            return {
+                'status': 200,
+                'message': 'Successfully reset password.'
+            }
+        except Exception as e:
+            print("Validation error:", str(e))
+            return ErrorMessageUtils.bad_request("Failed to reset password.")
 
 class refreshTokenResource(Resource):
     @jwt_required(refresh=True) 

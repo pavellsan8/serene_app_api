@@ -21,18 +21,33 @@ class MtUsersModel(db.Model):
         except Exception as e:
             db.session.rollback()
             raise e 
+    
+    @classmethod
+    def hash_password(self, password):
+        self.hashed_password = generate_password_hash(password)
+        return self.hashed_password
 
     @classmethod
     def getEmailFirst(cls, email):
         return cls.query.filter(cls.userEmail == email).first()
     
     @classmethod
-    def updateLoginTime(cls, userId, userEmail):
-        user = cls.query.filter_by(userId=userId, userEmail=userEmail).first()
+    def updateLoginTime(cls, email):
+        user = cls.query.filter_by(userEmail=email).first()
         dateLogin = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
         
         if user:
-            user.login_at = dateLogin
+            user.userLoginAt = dateLogin
+            db.session.commit()
+
+        return False
+
+    @classmethod
+    def updateUserPassword(cls, email, password):
+        user = cls.query.filter_by(userEmail=email).first()
+        
+        if user:
+            user.userPassword = password
             db.session.commit()
 
         return False
