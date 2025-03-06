@@ -1,7 +1,7 @@
 import random
 
 from flask import request
-from flask_jwt_extended import create_access_token, create_refresh_token
+from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, jwt_required
 from flask_restful import Resource
 from flask_mail import Message
 from store.mail import Mail
@@ -20,8 +20,8 @@ class userRegisterResource(Resource):
     def post(self):
         try:
             data = userRegisterSchema().load(request.get_json())
-        except:
-            return ErrorMessageUtils.bad_request
+        except Exception as e:
+            return ErrorMessageUtils.handle_error(userLoginResource, e)
         
         nameRegis = data['name']
         emailRegis = data['email']
@@ -50,65 +50,59 @@ class userRegisterResource(Resource):
         # else:
         #     return ErrorMessageUtils.bad_request("Email already registered. Please use another email.")
 
-class LoginUserResource(Resource):
+class userLoginResource(Resource):
     def post(self):
         try:
             data = userLoginSchema().load(request.get_json())
         except Exception as e:
-            return ErrorMessageUtils.handle_error(LoginUserResource, e)
+            return ErrorMessageUtils.bad_request
         
         emailLogin = data["email"]
         passwordLogin = data["password"]
 
-        # Find user data
-        checkUser = MtUsersModel.getEmailFirst(emailLogin)
+        # find user data in database
+        # checkUser = MtUsersModel.getEmailFirst(emailLogin)
 
-        if checkUser is not None:
-            passwordRegistered = checkUser.userPassword
-            passwordLoginCheck = check_password_hash(passwordRegistered, passwordLogin)
+        # if checkUser is not None:
+        #     passwordRegistered = checkUser.userPassword
+        #     passwordLoginCheck = check_password_hash(passwordRegistered, passwordLogin)
 
-            if not passwordLoginCheck:
-                return ErrorMessageUtils.bad_request("Authentication failed. Ensure the correct password.")
+        #     if not passwordLoginCheck:
+        #         return ErrorMessageUtils.bad_request("Authentication failed. Ensure the correct password.")
             
-            else:
+        #     else:
                 # create access token and refresh token
-                expiresAcessToken = timedelta(days=1)
-                expiresRefreshToken = timedelta(days=90)
+        expiresAccessToken = timedelta(days=1)
+        expiresRefreshToken = timedelta(days=90)
 
-                access_token = create_access_token(
-                    identity={
-                        "username": checkUser.username,
-                        "email": checkUser.email,
-                    },
-                    expires_delta=expiresAcessToken,
-                )
+        access_token = create_access_token(
+            identity=emailLogin,  # Just use the email string directly
+            expires_delta=expiresAccessToken,
+        )
+
+        refresh_token = create_refresh_token(
+            identity=emailLogin,  # Just use the email string directly
+            expires_delta=expiresRefreshToken,
+        )
                 
-                refresh_token = create_refresh_token(
-                    identity={
-                        "username": checkUser.username,
-                        "email": checkUser.email,
-                    },
-                    expires_delta=expiresRefreshToken,
-                )
-                        
-                try:
-                    userId = checkUser.userId
-                    userEmail = checkUser.userEmail
-                    MtUsersModel.updateLoginTime(userId, userEmail)
-                    return {
-                        "status" : 200,
-                        "message" : "Successfully login",
-                        "data" : {
-                            "email" : userEmail,
-                            "access_token" : access_token,
-                            "refresh_token" : refresh_token,
-                        }
-                    }
-                except Exception as e:
-                    return ErrorMessageUtils.bad_request("Login failed. Please try again.")
+        try:
+            # userId = checkUser.userId
+            # userEmail = checkUser.userEmail
+            # MtUsersModel.updateLoginTime(userId, userEmail)
+            return {
+                "status" : 200,
+                "message" : "Successfully login",
+                "data" : {
+                    "email" : emailLogin,
+                    "access_token" : access_token,
+                    "refresh_token" : refresh_token,
+                }
+            }
+        except Exception as e:
+            return ErrorMessageUtils.bad_request("Login failed. Please try again.")
                 
-        else:
-            return ErrorMessageUtils.not_found("Username not found or not registered.")
+        # else:
+        #     return ErrorMessageUtils.not_found("Username not found or not registered.")
 
 class sendEmailOtpVerificationResource(Resource):
     def __init__(self):
@@ -162,3 +156,19 @@ class sendEmailOtpVerificationResource(Resource):
         except Exception as e:
             print("Validation error:", str(e))
             return ErrorMessageUtils.bad_request("Please provide a valid email address.")
+
+class refreshTokenResource(Resource):
+    @jwt_required(refresh=True) 
+    def post(self):
+        identity = get_jwt_identity()
+        new_access_token = create_access_token(
+            identity=identity, 
+            expires_delta=timedelta(days=1)
+        )
+        return {
+            "status": 200,
+            "message": "Access token refreshed successfully",
+            "data": {
+                "access_token": new_access_token
+            }
+        }

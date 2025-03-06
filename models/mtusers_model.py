@@ -24,7 +24,7 @@ class MtUsersModel(db.Model):
 
     @classmethod
     def getEmailFirst(cls, email):
-        return cls.query.with_entities(cls.userId, cls.userEmail, cls.userPassword).filter(cls.userEmail == email).first()
+        return cls.query.filter(cls.userEmail == email).first()
     
     @classmethod
     def updateLoginTime(cls, userId, userEmail):

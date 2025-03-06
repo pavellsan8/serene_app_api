@@ -1,11 +1,11 @@
 from flask import Flask
 from flask_restful import Api
+from flask_jwt_extended import JWTManager
 
 from store.db import db
 from store.ma import ma
 from store.mail import mail
 from store.url_api import initialize_routes
-# from flask_jwt_extended import JWTManager
 from helpers.error_message import *
 
 # Config file
@@ -17,6 +17,7 @@ api = Api(app)
 db.init_app(app)
 ma.init_app(app)
 mail.init_app(app)
+jwt = JWTManager(app)
 
 # Initialize routes
 initialize_routes(api)
