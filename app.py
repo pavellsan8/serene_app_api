@@ -31,5 +31,11 @@ initialize_routes(api)
 # def expireToken(self, callback):
 #     return ErrorMessageUtils.unauthorized_request(message="Token has Expired")
 
+# For Vercel serverless deployment
+from werkzeug.middleware.proxy_fix import ProxyFix
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
+
 if __name__ == '__main__':    
     app.run(port=5001, debug=True)
+
+app.debug = False
