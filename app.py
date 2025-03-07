@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_restful import Api
 from flask_jwt_extended import JWTManager
+import os
 
 from store.db import db
 from store.ma import ma
@@ -10,7 +11,25 @@ from helpers.error_message import *
 
 # Config file
 app = Flask(__name__, instance_relative_config=True)
-app.config.from_pyfile('config.py')
+
+# Try to load from instance config, but fall back to environment variables
+# This helps with serverless environments like Vercel
+try:
+    app.config.from_pyfile('config.py')
+except:
+    # Load config from environment variables directly
+    app.config['SECRET_KEY'] = os.getenv("JWT_SECRET_KEY")
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("SQLALCHEMY_DATABASE_URI")
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['SQLALCHEMY_RECORD_QUERIES'] = True
+    
+    # Flask-Mail Configuration
+    app.config['MAIL_SERVER'] = os.getenv("MAIL_SERVER")
+    app.config['MAIL_PORT'] = int(os.getenv("MAIL_PORT", 587))
+    app.config['MAIL_USE_TLS'] = os.getenv("MAIL_USE_TLS", 'True') == 'True'
+    app.config['MAIL_USERNAME'] = os.getenv("MAIL_USERNAME")
+    app.config['MAIL_PASSWORD'] = os.getenv("MAIL_PASSWORD")
+    app.config['MAIL_DEFAULT_SENDER'] = os.getenv("MAIL_DEFAULT_SENDER")
 
 # Settings file
 api = Api(app)
@@ -35,7 +54,9 @@ initialize_routes(api)
 from werkzeug.middleware.proxy_fix import ProxyFix
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 
+# Set debug to False for production
+app.debug = False
+
+# This is for local development
 if __name__ == '__main__':    
     app.run(port=5001, debug=True)
-
-app.debug = False
