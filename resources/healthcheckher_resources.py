@@ -6,5 +6,5 @@ class healthCheckerResources(Resource):
     def get(self):    
         return {
             "status": 200,
-            "message": "API health is good!",
+            "message": "API is ready to test!",
         }, 200
