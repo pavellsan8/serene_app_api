@@ -9,3 +9,5 @@ instance/
 *.pyc
 __pycache__/
 
+
+.vercel
