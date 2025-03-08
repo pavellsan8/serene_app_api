@@ -1,16 +1,16 @@
+import os
 import requests
 
 from flask_restful import Resource
-from flask import request
+from flask import request, current_app
 from googleapiclient.discovery import build
 from store.ytmusic import ytmusic
-
-from instance.config import GOOGLE_API_KEY
 
 class GetBookListResource(Resource):
     def get(self):
         query = request.args.get('query', '')
-        url = f'https://www.googleapis.com/books/v1/volumes?q={query}&key={GOOGLE_API_KEY}'
+        google_api_key = current_app.config.get('GOOGLE_API_KEY')
+        url = f'https://www.googleapis.com/books/v1/volumes?q={query}&key={google_api_key}'
         
         response = requests.get(url)
         data = response.json()
@@ -38,12 +38,14 @@ class GetBookListResource(Resource):
 
 class GetVideoListResource(Resource):
     def get(self):
-        query = request.args.get('query', '')  # Default query if not provided
-        youtube = build('youtube', 'v3', developerKey=GOOGLE_API_KEY)
-
-        videos = []  # List to store videos
-
-        while len(videos) < 100:  # Fetch up to 100 videos
+        query = request.args.get('query', '')
+        google_api_key = current_app.config.get('GOOGLE_API_KEY')
+        
+        try:
+            youtube = build('youtube', 'v3', developerKey=google_api_key)
+            videos = []  # List to store videos
+            
+            # Only make one request to avoid excessive quota usage
             yt_request = youtube.search().list(
                 part='snippet',
                 q=query,
@@ -52,22 +54,38 @@ class GetVideoListResource(Resource):
             response = yt_request.execute()
 
             for item in response.get('items', []):
-                video_id = item['id'].get('videoId', 'N/A')  # Extract video ID
-                videos.append({
-                    'title': item['snippet']['title'],
-                    'video_id': video_id,
-                    'youtube_link': f'https://www.youtube.com/watch?v={video_id}' if video_id != 'N/A' else 'N/A',
-                    'channel': item['snippet']['channelTitle'],
-                    'published_at': item['snippet']['publishedAt'],
-                    'description': item['snippet']['description'],
-                    'thumbnail_url': item['snippet']['thumbnails']['high']['url']
-                })
-
-        return {
-            'status': 200,
-            'message': 'Videos found successfully',
-            'data': videos[:100]  # Limit to 100 results
-        }
+                if 'videoId' in item.get('id', {}):
+                    video_id = item['id']['videoId']
+                    videos.append({
+                        'title': item['snippet']['title'],
+                        'video_id': video_id,
+                        'youtube_link': f'https://www.youtube.com/watch?v={video_id}',
+                        'channel': item['snippet']['channelTitle'],
+                        'published_at': item['snippet']['publishedAt'],
+                        'description': item['snippet']['description'],
+                        'thumbnail_url': item['snippet']['thumbnails']['high']['url']
+                    })
+            
+            return {
+                'status': 200,
+                'message': 'Videos found successfully',
+                'data': videos
+            }
+            
+        except Exception as e:
+            error_message = str(e)
+            if "quota" in error_message.lower():
+                return {
+                    'status': 429,
+                    'message': 'YouTube API quota exceeded. Please try again tomorrow.',
+                    'data': []
+                }, 429
+            else:
+                return {
+                    'status': 500,
+                    'message': f'Error fetching videos: {error_message}',
+                    'data': []
+                }, 500
     
 class GetSongsListResource(Resource):
     def search_songs(self, query, limit=10):

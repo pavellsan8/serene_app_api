@@ -17,17 +17,19 @@ try:
     app.config.from_pyfile('config.py')
 except:
     app.config['SECRET_KEY'] = os.getenv("JWT_SECRET_KEY")
+    
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("SQLALCHEMY_DATABASE_URI")
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SQLALCHEMY_RECORD_QUERIES'] = True
     
-    # Flask-Mail Configuration
     app.config['MAIL_SERVER'] = os.getenv("MAIL_SERVER")
     app.config['MAIL_PORT'] = int(os.getenv("MAIL_PORT", 587))
     app.config['MAIL_USE_TLS'] = os.getenv("MAIL_USE_TLS", 'True') == 'True'
     app.config['MAIL_USERNAME'] = os.getenv("MAIL_USERNAME")
     app.config['MAIL_PASSWORD'] = os.getenv("MAIL_PASSWORD")
     app.config['MAIL_DEFAULT_SENDER'] = os.getenv("MAIL_DEFAULT_SENDER")
+
+    app.config['GOOGLE_API_KEY'] = os.getenv("GOOGLE_BOOKS_API_KEY")
 
 # Settings file
 api = Api(app)
