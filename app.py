@@ -6,18 +6,16 @@ import os
 from store.db import db
 from store.ma import ma
 from store.mail import mail
+from store.ytmusic import ytmusic
 from store.url_api import initialize_routes
 from helpers.error_message import *
 
 # Config file
 app = Flask(__name__, instance_relative_config=True)
 
-# Try to load from instance config, but fall back to environment variables
-# This helps with serverless environments like Vercel
 try:
     app.config.from_pyfile('config.py')
 except:
-    # Load config from environment variables directly
     app.config['SECRET_KEY'] = os.getenv("JWT_SECRET_KEY")
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("SQLALCHEMY_DATABASE_URI")
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False

@@ -3,6 +3,7 @@ from flask_restful import Api
 from resources.healthcheckher_resource import HealthCheckerResources
 from resources.authentication_resource import *
 from resources.user_profile_resource import *
+from resources.features_resource import *
 
 def initialize_routes(api: Api):
     # declare API url here
@@ -13,6 +14,10 @@ def initialize_routes(api: Api):
     api.add_resource(SendEmailOtpVerificationResource, '/api/v1/email-otp-verification')
     api.add_resource(ResetPasswordResource, '/api/v1/reset-password')
     api.add_resource(RefreshTokenResource, '/api/v1/refresh-token')
+
+    api.add_resource(GetBookListResource, '/api/v1/get-book-list')
+    api.add_resource(GetVideoListResource, '/api/v1/get-video-list')
+    api.add_resource(GetSongsListResource, '/api/v1/get-song-list')
 
     api.add_resource(UserProfileDataResource, '/api/v1/user-profile')
     api.add_resource(UserLogoutResource, '/api/v1/logout-user')
