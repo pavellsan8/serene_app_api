@@ -1,7 +1,9 @@
+import os
+
 from flask import Flask
 from flask_restful import Api
 from flask_jwt_extended import JWTManager
-import os
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 from store.db import db
 from store.ma import ma
@@ -51,7 +53,6 @@ initialize_routes(api)
 #     return ErrorMessageUtils.unauthorized_request(message="Token has Expired")
 
 # For Vercel serverless deployment
-from werkzeug.middleware.proxy_fix import ProxyFix
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 
 # Set debug to False for production

@@ -169,7 +169,7 @@ class SendEmailOtpVerificationResource(Resource):
             return ErrorMessageUtils.bad_request("Please provide a valid email address.")
         
 class ResetPasswordResource(Resource):
-    def post(self):
+    def put(self):
         try:
             data = UserLoginSchema().load(request.get_json())
         except:
