@@ -23,3 +23,4 @@ def initialize_routes(api: Api):
 
     api.add_resource(UserProfileDataResource, '/api/v1/user-profile')
     api.add_resource(UserLogoutResource, '/api/v1/logout-user')
+    api.add_resource(DeleteUserDataResource, '/api/v1/delete-user')

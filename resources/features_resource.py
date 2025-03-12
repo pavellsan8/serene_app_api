@@ -4,10 +4,12 @@ from flask_restful import Resource
 from flask import request, current_app
 from googleapiclient.discovery import build
 from store.ytmusic import ytmusic
+from flask_jwt_extended import jwt_required
 
 from helpers.error_message import ErrorMessageUtils
 
 class GetBookListResource(Resource):
+    @jwt_required
     def get(self):
         query = request.args.get('query', '')
         google_api_key = current_app.config.get('GOOGLE_API_KEY')
@@ -50,6 +52,7 @@ class GetBookListResource(Resource):
             return ErrorMessageUtils.internal_error
 
 class GetVideoListResource(Resource):
+    @jwt_required
     def get(self):
         query = request.args.get('query', '')
         google_api_key = current_app.config.get('GOOGLE_API_KEY')
@@ -121,6 +124,7 @@ class GetSongsListResource(Resource):
 
         return songs
     
+    @jwt_required
     def get(self):
         try:
             query = request.args.get('query', '')
@@ -139,6 +143,7 @@ class GetSongsListResource(Resource):
             return ErrorMessageUtils.internal_error
         
 class GetBookListV2Resource(Resource):
+    @jwt_required
     def get(self):
         query = request.args.get('query', '')
         if not query:
@@ -176,6 +181,7 @@ class GetBookListV2Resource(Resource):
             return ErrorMessageUtils.internal_error
 
 class GetBookDetailDataResource(Resource):
+    @jwt_required
     def get(self):
         book_id = request.args.get('bookId', '') 
         if not book_id:

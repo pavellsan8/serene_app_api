@@ -10,5 +10,5 @@ class UserLoginSchema(ma.Schema):
     email = fields.String(required=True, allow_none=False, error_messages={"required": "Please provide a valid email address."})
     password = fields.String(required=True, allow_none=False, error_messages={"required": "Please provide a valid password"}) 
 
-class GetEmailOtpSchema(ma.Schema):
+class GetEmailDataSchema(ma.Schema):
     email = fields.String(required=True, error_messages={"required": "Please provide a valid email address."})

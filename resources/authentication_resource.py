@@ -147,7 +147,7 @@ class SendEmailOtpVerificationResource(Resource):
         
     def post(self):
         try:
-            data = GetEmailOtpSchema().load(request.get_json())
+            data = GetEmailDataSchema().load(request.get_json())
             email = data["email"]
 
             # untuk search email di database
@@ -191,6 +191,26 @@ class ResetPasswordResource(Resource):
         except Exception as e:
             print("Validation error:", str(e))
             return ErrorMessageUtils.bad_request("Failed to reset password.")
+        
+class DeleteUserDataResource(Resource):
+    def delete(self):
+        try:
+            data = GetEmailDataSchema().load(request.get_json())
+            email = data["email"]
+
+            # if MtUsersModel.getEmailFirst(email):
+            #     MtUsersModel.deleteUser(email)
+            # else:
+            #     return ErrorMessageUtils.not_found("The provided email address was not found.")
+            
+            return {
+                'status': 200,
+                'message': 'User deleted successfully',
+            }, 200
+
+        except Exception as e:
+            print("Validation error:", str(e))
+            return ErrorMessageUtils.bad_request("Please provide a valid email address.")
 
 class RefreshTokenResource(Resource):
     @jwt_required(refresh=True) 

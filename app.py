@@ -3,18 +3,17 @@ import os
 from flask import Flask
 from flask_restful import Api
 from flask_jwt_extended import JWTManager
+from sqlalchemy import text
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from store.db import db
 from store.ma import ma
 from store.mail import mail
-from store.ytmusic import ytmusic
 from store.url_api import initialize_routes
 from helpers.error_message import *
 
 # Config file
 app = Flask(__name__, instance_relative_config=True)
-
 try:
     app.config.from_pyfile('config.py')
 except:
@@ -47,17 +46,20 @@ initialize_routes(api)
 # def unauthorized(msg):
 #     return ErrorMessageUtils.unauthorized_request(message=msg)
 
-
 # @jwt.expired_token_loader
 # def expireToken(self, callback):
 #     return ErrorMessageUtils.unauthorized_request(message="Token has Expired")
 
 # For Vercel serverless deployment
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
-
-# Set debug to False for production
 app.debug = False
 
-# This is for local development
+# Connection Testing
 if __name__ == '__main__':    
+    with app.app_context():
+        try:
+            db.session.execute(text("SELECT 1"))  # Simple test query
+            print("✅ Database connection successful!")
+        except Exception as e:
+            print(f"❌ Database connection failed: {e}")
     app.run(port=5001, debug=True)
