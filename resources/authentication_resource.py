@@ -111,10 +111,13 @@ class UserLoginResource(Resource):
 class UserLogoutResource(Resource):
     @jwt_required()
     def post(self):
-        return {
-            "status": 200, 
-            "message": "Successfully logged out",
-        }, 200
+        try:
+            return {
+                "status": 200, 
+                "message": "Successfully logged out",
+            }, 200
+        except:
+            return ErrorMessageUtils.unauthorized_request("Missing or invalid access token")
 
 class SendEmailOtpVerificationResource(Resource):
     def __init__(self):
