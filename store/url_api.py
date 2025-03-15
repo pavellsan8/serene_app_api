@@ -14,6 +14,8 @@ def initialize_routes(api: Api):
     api.add_resource(SendEmailOtpVerificationResource, '/api/v1/email-otp-verification')
     api.add_resource(ResetPasswordResource, '/api/v1/reset-password')
     api.add_resource(RefreshTokenResource, '/api/v1/refresh-token')
+    api.add_resource(UserLogoutResource, '/api/v1/logout-user')
+    api.add_resource(DeleteUserDataResource, '/api/v1/delete-user')
 
     api.add_resource(GetBookListResource, '/api/v1/get-book-list')
     api.add_resource(GetBookListV2Resource, '/api/v2/get-book-list')
@@ -22,5 +24,3 @@ def initialize_routes(api: Api):
     api.add_resource(GetSongsListResource, '/api/v1/get-song-list')
 
     api.add_resource(UserProfileDataResource, '/api/v1/user-profile')
-    api.add_resource(UserLogoutResource, '/api/v1/logout-user')
-    api.add_resource(DeleteUserDataResource, '/api/v1/delete-user')

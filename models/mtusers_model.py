@@ -1,7 +1,8 @@
 from datetime import datetime
+from werkzeug.security import generate_password_hash
 
 from store.db import db
-from werkzeug.security import generate_password_hash
+from helpers.function_utils import *
 
 class MtUsersModel(db.Model):
     __tablename__ = 'mtusers'
@@ -14,20 +15,11 @@ class MtUsersModel(db.Model):
     userCreatedAt = db.Column(db.DateTime, default=lambda: datetime.now(datetime.timezone.utc), nullable=False)
     userLoginAt = db.Column(db.DateTime, nullable=True)
     userUpdatedAt = db.Column(db.DateTime, nullable=True)
-    
+        
     @classmethod
-    def saveToDb(cls, instance):
-        db.session.add(instance)
-        try:
-            db.session.commit()
-        except Exception as e:
-            db.session.rollback()
-            raise e 
-    
-    @classmethod
-    def hash_password(self, password):
-        self.hashed_password = generate_password_hash(password)
-        return self.hashed_password
+    def hash_password(cls, password):
+        hashed_password = generate_password_hash(password)
+        return hashed_password.replace("scrypt:32768:8:1$", "", 1)
 
     @classmethod
     def getEmailFirst(cls, email):
@@ -43,25 +35,25 @@ class MtUsersModel(db.Model):
     @classmethod
     def updateUserProfile(cls, name, email, phnum):
         user = cls.query.filter_by(userEmail=email).first()
-        dateUpdate = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
 
         if user:
             user.userName = name
             user.userEmail = email
             user.userPhoneNumber = phnum
-            user.userUpdatedAt = dateUpdate
-            db.session.commit(user)
+            user.userUpdatedAt = datetime.now(datetime.timezone.utc)
+            DbUtils.update_in_db(user)
+            return True
 
         return False
     
     @classmethod
     def updateLoginTime(cls, email):
         user = cls.query.filter_by(userEmail=email).first()
-        dateLogin = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
         
         if user:
-            user.userLoginAt = dateLogin
-            db.session.commit()
+            user.userLoginAt = datetime.now(datetime.timezone.utc)
+            DbUtils.update_in_db(user)
+            return True
 
         return False
 
@@ -71,7 +63,8 @@ class MtUsersModel(db.Model):
         
         if user:
             user.userPassword = password
-            db.session.commit()
+            DbUtils.update_in_db(user)
+            return True
 
         return False
     
@@ -80,7 +73,7 @@ class MtUsersModel(db.Model):
         user = cls.query.filter_by(userEmail=email).first()
         
         if user:
-            db.session.delete(user)
-            db.session.commit()
+            DbUtils.delete_from_db(user)
+            return True
 
         return False

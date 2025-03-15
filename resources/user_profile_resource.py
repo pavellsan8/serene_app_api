@@ -22,13 +22,13 @@ class UserProfileDataResource(Resource):
         
         # return {
         #     "status": 200,
-        #     "message": "User data found successfully",
+        #     "message": "User data retrieved successfully.",
         #     "data": userData.to_dict(),
         # }, 200
         
         return {
             "status": 200,
-            "message": "User data found successfully",
+            "message": "User data retrieved successfully.",
             "data": {
                 "name": "John Doe",
                 "email": userEmail,
@@ -51,7 +51,7 @@ class UserProfileDataResource(Resource):
             # MtUsersModel.updateUserProfile(userName, userEmail, userPhNum)
             return {
                 "status": 200,
-                "message": "User profile updated successfully",
+                "message": "User profile updated successfully.",
                 "data": {
                     "name": userName,
                     "email": userEmail,
@@ -77,7 +77,7 @@ class UserProfileDataResource(Resource):
         #     MtUsersModel.deleteUser(userData)
         return {
             "status": 200,
-            "message": "User data deleted successfully",
+            "message": "User data deleted successfully.",
         }, 200
         # else:
         #     return ErrorMessageUtils.not_found

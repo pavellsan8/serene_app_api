@@ -5,12 +5,13 @@ from flask_jwt_extended import create_access_token, create_refresh_token, get_jw
 from flask_restful import Resource
 from flask_mail import Message
 from store.mail import Mail
-from datetime import datetime, timedelta
+from datetime import timedelta
+from werkzeug.security import check_password_hash
 
 from helpers.error_message import *
+from helpers.function_utils import DbUtils
 from models.mtusers_model import *
 from schemas.authentication_schema import *
-from werkzeug.security import check_password_hash
 
 class UserRegisterResource(Resource):
     def post(self):
@@ -22,12 +23,9 @@ class UserRegisterResource(Resource):
         nameRegis = data['name']
         emailRegis = data['email']
         passwordRegis = data['password']
-        dateRegis = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
-
         passwordHash = MtUsersModel.hash_password(passwordRegis)
-        passwordDb_clean = passwordHash.replace("scrypt:32768:8:1$", "", 1)
 
-        print(nameRegis, emailRegis, passwordRegis, passwordDb_clean, dateRegis)
+        print(nameRegis, emailRegis, passwordRegis, passwordHash)
 
         # save to database
         # checkEmail = MtUsersModel.getEmailFirst(emailRegis)
@@ -35,78 +33,80 @@ class UserRegisterResource(Resource):
         #     userRegisData = MtUsersModel(
         #         userName = nameRegis, 
         #         userEmail = emailRegis, 
-        #         userPassword = passwordDb_clean,
-        #         userCreatedAt = dateRegis,
+        #         userPassword = passwordHash,
         #     )
 
-            # try:
-            #     MtUsersModel.saveToDb(userRegisData)
-        return {
-            "status": 200,
-            "message": "Successfully registered",
-        }, 200
-            # except:
-            #     return ErrorMessageUtils.bad_request("Failed to register")
+        try:
+            # DbUtils.save_to_db(userRegisData)
+            return {
+                "status": 200,
+                "message": "User registration completed successfully."
+            }, 200
+        except Exception as e:
+            print("Error:", str(e))
+            return ErrorMessageUtils.bad_request("User registration failed. Please try again.")
         
         # else:
-        #     return ErrorMessageUtils.bad_request("Email already registered. Please use another email.")
+        #     return ErrorMessageUtils.bad_request("The provided email is already in use. Please choose another email.")
 
 class UserLoginResource(Resource):
     def post(self):
         try:
             data = UserLoginSchema().load(request.get_json())
-        except Exception as e:
+        except:
             return ErrorMessageUtils.bad_request
         
         emailLogin = data["email"]
         passwordInput = data["password"]
-        passwordDb = MtUsersModel.hash_password(passwordInput)
-        passwordDb_clean = passwordDb.replace("scrypt:32768:8:1$", "", 1)
+        passwordInputCheck = MtUsersModel.hash_password(passwordInput)
 
-        print(emailLogin, passwordInput, passwordDb_clean)
+        print(emailLogin, passwordInput, passwordInputCheck)
 
         # find user data in database
         # checkUser = MtUsersModel.getEmailFirst(emailLogin)
 
         # if checkUser is not None:
         #     passwordRegistered = checkUser.userPassword
-        #     passwordLoginCheck = check_password_hash(passwordRegistered, passwordLogin)
+        #     passwordLoginCheck = check_password_hash(passwordRegistered, passwordInputCheck)
 
-        #     if not passwordLoginCheck:
-        #         return ErrorMessageUtils.bad_request("Authentication failed. Ensure the correct password.")
-        #     else:
+        #     if passwordLoginCheck:
         #         create access token and refresh token
-        expiresAccessToken = timedelta(days=1)
-        expiresRefreshToken = timedelta(days=90)
+        try:
+            expiresAccessToken = timedelta(days=1)
+            expiresRefreshToken = timedelta(days=90)
 
-        access_token = create_access_token(
-            identity=emailLogin,
-            expires_delta=expiresAccessToken,
-        )
+            access_token = create_access_token(
+                identity=emailLogin,
+                expires_delta=expiresAccessToken,
+            )
 
-        refresh_token = create_refresh_token(
-            identity=emailLogin,
-            expires_delta=expiresRefreshToken,
-        )
-                
-        #     try:
-        #         userId = checkUser.userId
-        #         userEmail = checkUser.userEmail
-        #         MtUsersModel.updateLoginTime(userId, userEmail)
-        return {
-            "status": 200,
-            "message": "Successfully login",
-            "data": {
-                "email": emailLogin,
-                "access_token": access_token,
-                "refresh_token": refresh_token,
-            }
-        }, 200
-        #     except Exception as e:
-        #         return ErrorMessageUtils.bad_request("Login failed. Please try again.")
+            refresh_token = create_refresh_token(
+                identity=emailLogin,
+                expires_delta=expiresRefreshToken,
+            )
+
+            # userId = checkUser.userId
+            # userEmail = checkUser.userEmail
+            # MtUsersModel.updateLoginTime(userId, userEmail)
+            return {
+                "status": 200,
+                "message": "Login successful. Welcome back!",
+                "data": {
+                    "email": emailLogin,
+                    "access_token": access_token,
+                    "refresh_token": refresh_token,
+                }
+            }, 200
+        
+        except Exception as e:
+            print("Error:", str(e))
+            return ErrorMessageUtils.bad_request("Login failed... please try again.")
+            
+        #     else:
+        #         return ErrorMessageUtils.bad_request("Invalid credentials. Please check your email and password and try again.")
                 
         # else:
-        #     return ErrorMessageUtils.not_found("Username not found or not registered.")
+        #     return ErrorMessageUtils.not_found("The email you entered is not registered. Please sign up to create an account.")
 
 class UserLogoutResource(Resource):
     @jwt_required()
@@ -114,10 +114,10 @@ class UserLogoutResource(Resource):
         try:
             return {
                 "status": 200, 
-                "message": "Successfully logged out",
+                "message": "Log out successful.",
             }, 200
         except:
-            return ErrorMessageUtils.unauthorized_request("Missing or invalid access token")
+            return ErrorMessageUtils.unauthorized_request("Your session is invalid or has expired. Please log in again.")
 
 class SendEmailOtpVerificationResource(Resource):
     def __init__(self):
@@ -146,7 +146,7 @@ class SendEmailOtpVerificationResource(Resource):
             message = Message(subject, recipients=recipients, html=html_body)
             self.mail.send(message)
         except:
-            return ErrorMessageUtils.bad_request("Failed to send email OTP verification")
+            return ErrorMessageUtils.bad_request("OTP verification email could not be sent. Ensure your email address is correct and try again.")
         
     def post(self):
         try:
@@ -156,14 +156,14 @@ class SendEmailOtpVerificationResource(Resource):
             # untuk search email di database
             # emailData = MtUsersModel.getEmailFirst(email)
             # if not emailData:
-            #     return ErrorMessageUtils.not_found("The provided email address was not found.")
+            #     return ErrorMessageUtils.not_found("This email is not registered. Please check and try again.")
 
             otp_code = self.generateOtp()
             self.sendEmailOtp(email, otp_code)
 
             return {
                 "status": 200,
-                "message": "Email OTP verification has been sent. Please check your email.",
+                "message": "A verification OTP has been sent to your email. Please check your inbox.",
                 "otp_code": otp_code
             }, 200
 
@@ -181,21 +181,21 @@ class ResetPasswordResource(Resource):
         userEmail = data['email']
         newPassword = data['password']
         passwordDb = MtUsersModel.hash_password(newPassword)
-        passwordDb_clean = passwordDb.replace("scrypt:32768:8:1$", "", 1)
 
-        print(userEmail, passwordDb_clean)
+        print(userEmail, passwordDb)
 
         try:
             # MtUsersModel.updateUserPassword(userEmail, passwordDb)
             return {
                 'status': 200,
-                'message': 'Successfully reset password.'
+                'message': 'Your password has been successfully reset.'
             }, 200
         except Exception as e:
             print("Validation error:", str(e))
-            return ErrorMessageUtils.bad_request("Failed to reset password.")
+            return ErrorMessageUtils.bad_request("Unable to reset password. Please try again later.")
         
 class DeleteUserDataResource(Resource):
+    @jwt_required()
     def delete(self):
         try:
             data = GetEmailDataSchema().load(request.get_json())
@@ -204,16 +204,16 @@ class DeleteUserDataResource(Resource):
             # if MtUsersModel.getEmailFirst(email):
             #     MtUsersModel.deleteUser(email)
             # else:
-            #     return ErrorMessageUtils.not_found("The provided email address was not found.")
+            #     return ErrorMessageUtils.not_found("This email is not registered. Please check and try again.")
             
             return {
                 'status': 200,
-                'message': 'User deleted successfully',
+                'message': 'User has been successfully deleted.',
             }, 200
-
+        
         except Exception as e:
             print("Validation error:", str(e))
-            return ErrorMessageUtils.bad_request("Please provide a valid email address.")
+            return ErrorMessageUtils.bad_request("Invalid email address. Please check and try again.")
 
 class RefreshTokenResource(Resource):
     @jwt_required(refresh=True) 

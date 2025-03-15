@@ -3,6 +3,7 @@ import os
 from flask import Flask
 from flask_restful import Api
 from flask_jwt_extended import JWTManager
+from flask_jwt_extended.exceptions import NoAuthorizationError, InvalidHeaderError
 from sqlalchemy import text
 from werkzeug.middleware.proxy_fix import ProxyFix
 
@@ -42,13 +43,17 @@ jwt = JWTManager(app)
 # Initialize routes
 initialize_routes(api)
 
-# @jwt.unauthorized_loader
-# def unauthorized(msg):
-#     return ErrorMessageUtils.unauthorized_request(message=msg)
+@app.errorhandler(NoAuthorizationError)
+def handle_no_authorization_error(e):
+    return ErrorMessageUtils.unauthorized_request("Missing access token. Please provide a valid token.")
 
-# @jwt.expired_token_loader
-# def expireToken(self, callback):
-#     return ErrorMessageUtils.unauthorized_request(message="Token has Expired")
+@app.errorhandler(InvalidHeaderError)
+def handle_invalid_header_error(e):
+    return ErrorMessageUtils.unauthorized_request("Invalid token format. Please check the authorization header.")
+
+@jwt.expired_token_loader
+def handle_expired_token(jwt_header, jwt_payload):
+    return ErrorMessageUtils.unauthorized_request("Token has expired. Please log in again.")
 
 # For Vercel serverless deployment
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
