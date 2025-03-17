@@ -14,22 +14,22 @@ class GetBookListResource(Resource):
         query = request.args.get('query', '')
         google_api_key = current_app.config.get('GOOGLE_API_KEY')
 
-        if not query or google_api_key:
-            return ErrorMessageUtils.bad_request
+        if not query or not google_api_key:
+            return ErrorMessageUtils.bad_request()
         
         url = f'https://www.googleapis.com/books/v1/volumes?q={query}&key={google_api_key}'
         
         try:
             response = requests.get(url)
             if response.status_code != 200:
-                return ErrorMessageUtils.internal_error
+                return ErrorMessageUtils.internal_error()
             
             data = response.json()
             
             books = []
             for book in data.get('items', []):
-                info = book['volumeInfo']
-                access = book['accessInfo']
+                info = book.get('volumeInfo', {})
+                access = book.get('accessInfo', {})
                 books.append({
                     'title': info.get('title', 'Unknown'),
                     'author': info.get('authors', ['Unknown']),
@@ -48,8 +48,8 @@ class GetBookListResource(Resource):
             }, 200
     
         except Exception as e:
-            print("Validation error:", str(e))
-            return ErrorMessageUtils.internal_error
+            print("Error saat mengambil data:", str(e))
+            return ErrorMessageUtils.internal_error()
 
 class GetVideoListResource(Resource):
     @jwt_required()
@@ -57,8 +57,8 @@ class GetVideoListResource(Resource):
         query = request.args.get('query', '')
         google_api_key = current_app.config.get('GOOGLE_API_KEY')
 
-        if not query or google_api_key:
-            return ErrorMessageUtils.bad_request
+        if not query or google_api_key is None:
+            return ErrorMessageUtils.bad_request()
         
         try:
             youtube = build('youtube', 'v3', developerKey=google_api_key)
@@ -159,8 +159,9 @@ class GetBookListV2Resource(Resource):
             data = response.json()
 
             books = []
+            total = data.get('total')
+            print(total)
             for book in data.get('books', []):
-
                 books.append({
                     'id': book.get('id').rstrip('X'),
                     'title': book.get('title'),
@@ -173,6 +174,7 @@ class GetBookListV2Resource(Resource):
             return {
                 'status': 200,
                 'message': 'Book found successfully',
+                'total': total,
                 'data': books,
             }, 200
         
