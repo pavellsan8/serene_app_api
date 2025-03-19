@@ -15,6 +15,7 @@ class MtUsersModel(db.Model):
     userCreatedAt = db.Column(db.DateTime, default=lambda: datetime.now(datetime.timezone.utc), nullable=False)
     userLoginAt = db.Column(db.DateTime, nullable=True)
     userUpdatedAt = db.Column(db.DateTime, nullable=True)
+    userQuestionnaireStatus = db.Column(db.String(1), server_default='F', nullable=False)
         
     @classmethod
     def hash_password(cls, password):
