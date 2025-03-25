@@ -142,6 +142,12 @@ class GetSongsListResource(Resource):
             print("Validation error:", str(e))
             return ErrorMessageUtils.internal_error
         
+import concurrent.futures
+import requests
+from flask_restful import Resource
+from flask_jwt_extended import jwt_required
+from flask import request
+
 class GetBookListV2Resource(Resource):
     @jwt_required()
     def get(self):
@@ -157,19 +163,39 @@ class GetBookListV2Resource(Resource):
                 return ErrorMessageUtils.internal_error
             
             data = response.json()
-
-            books = []
             total = data.get('total')
             print(total)
-            for book in data.get('books', []):
-                books.append({
-                    'id': book.get('id').rstrip('X'),
-                    'title': book.get('title'),
-                    'subtitle': book.get('subtitle'),
-                    'authors': book.get('authors'),
-                    'image': book.get('image'),
-                    'url': book.get('url'),
-                })
+
+            def fetch_book_details(book):
+                try:
+                    book_id = book.get('id').rstrip('X')
+                    detail_url = f'https://www.dbooks.org/api/book/{book_id}'
+                    
+                    detail_response = requests.get(detail_url, timeout=10)
+                    if detail_response.status_code != 200:
+                        print(f"Failed to get details for book {book_id}")
+                        return None
+
+                    detail_data = detail_response.json()
+
+                    return {
+                        'id': book.get('id').rstrip('X'),
+                        'title': book.get('title'),
+                        'subtitle': book.get('subtitle'),
+                        'authors': book.get('authors'),
+                        'description': detail_data.get('description', ''),
+                        'pages': detail_data.get('pages'),
+                        'year': detail_data.get('year'),
+                        'image': book.get('image'),
+                        'url': book.get('url'),
+                        'download': detail_data.get('download'),
+                    }
+                except Exception as detail_error:
+                    print(f"Error fetching details for book {book.get('id')}: {detail_error}")
+                    return None
+
+            with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+                books = list(filter(None, executor.map(fetch_book_details, data.get('books', []))))
 
             return {
                 'status': 200,
