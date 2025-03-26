@@ -1,4 +1,5 @@
 import requests
+import re
 
 from flask_restful import Resource
 from flask import request, current_app
@@ -52,11 +53,25 @@ class GetBookListResource(Resource):
             return ErrorMessageUtils.internal_error()
 
 class GetVideoListResource(Resource):
+    @staticmethod
+    def parse_youtube_duration(duration):
+        # Extract hours, minutes, seconds using regex
+        hours_match = re.search(r'(\d+)H', duration)
+        minutes_match = re.search(r'(\d+)M', duration)
+        seconds_match = re.search(r'(\d+)S', duration)
+        
+        # Default to 0 if not found
+        hours = int(hours_match.group(1)) if hours_match else 0
+        minutes = int(minutes_match.group(1)) if minutes_match else 0
+        seconds = int(seconds_match.group(1)) if seconds_match else 0
+        
+        # Format as HH:MM:SS
+        return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+
     @jwt_required()
     def get(self):
         query = request.args.get('query', '')
         google_api_key = current_app.config.get('GOOGLE_API_KEY')
-
         if not query or google_api_key is None:
             return ErrorMessageUtils.bad_request()
         
@@ -64,17 +79,46 @@ class GetVideoListResource(Resource):
             youtube = build('youtube', 'v3', developerKey=google_api_key)
             videos = []  # List to store videos
             
-            # Only make one request to avoid excessive quota usage
-            yt_request = youtube.search().list(
+            # First, search for videos
+            search_request = youtube.search().list(
                 part='snippet',
                 q=query,
                 maxResults=50,  # Max limit per request
+                type='video'  # Ensure only videos are returned
             )
-            response = yt_request.execute()
-
-            for item in response.get('items', []):
+            search_response = search_request.execute()
+            
+            # Extract video IDs
+            video_ids = [
+                item['id']['videoId'] 
+                for item in search_response.get('items', []) 
+                if 'videoId' in item.get('id', {})
+            ]
+            
+            # Fetch video details including duration
+            if video_ids:
+                video_details_request = youtube.videos().list(
+                    part='snippet,contentDetails',
+                    id=','.join(video_ids)
+                )
+                video_details_response = video_details_request.execute()
+                
+                # Create a dictionary for quick lookup of details
+                details_dict = {
+                    item['id']: item 
+                    for item in video_details_response.get('items', [])
+                }
+            
+            # Process and combine search and details results
+            for item in search_response.get('items', []):
                 if 'videoId' in item.get('id', {}):
                     video_id = item['id']['videoId']
+                    
+                    # Get additional details from the details dictionary
+                    video_detail = details_dict.get(video_id, {})
+                    duration = video_detail.get('contentDetails', {}).get('duration', 'N/A')
+                    durationParse = GetVideoListResource.parse_youtube_duration(duration)
+                    
                     videos.append({
                         'title': item['snippet']['title'],
                         'video_id': video_id,
@@ -82,7 +126,8 @@ class GetVideoListResource(Resource):
                         'channel': item['snippet']['channelTitle'],
                         'published_at': item['snippet']['publishedAt'],
                         'description': item['snippet']['description'],
-                        'thumbnail': item['snippet']['thumbnails']['high']['url']
+                        'thumbnail': item['snippet']['thumbnails']['high']['url'],
+                        'duration': durationParse,
                     })
             
             return {
@@ -90,7 +135,7 @@ class GetVideoListResource(Resource):
                 'message': 'Videos found successfully',
                 'data': videos
             }
-            
+        
         except Exception as e:
             error_message = str(e)
             if "quota" in error_message.lower():
