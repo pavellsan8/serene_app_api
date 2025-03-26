@@ -82,7 +82,7 @@ class GetVideoListResource(Resource):
                         'channel': item['snippet']['channelTitle'],
                         'published_at': item['snippet']['publishedAt'],
                         'description': item['snippet']['description'],
-                        'thumbnail_url': item['snippet']['thumbnails']['high']['url']
+                        'thumbnail': item['snippet']['thumbnails']['high']['url']
                     })
             
             return {
