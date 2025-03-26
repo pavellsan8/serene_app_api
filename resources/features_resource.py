@@ -115,7 +115,7 @@ class GetSongsListResource(Resource):
             songs.append({
                 "title": song["title"],
                 "video_id": song["videoId"],
-                "youtube_music_link": f"https://music.youtube.com/watch?v={song['videoId']}",
+                "youtube_link": f"https://music.youtube.com/watch?v={song['videoId']}",
                 "artist": song["artists"][0]["name"],
                 "album": song["album"]["name"] if "album" in song else "N/A",
                 "duration": song.get("duration", "N/A"),
