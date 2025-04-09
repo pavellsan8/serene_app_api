@@ -14,8 +14,8 @@ class UserQuestionnaireAnswerResource(Resource):
         
         userEmail = data['email']
         userFeeling = data['feeling']
-        userEmotion = data['emotion']
         userMood = data['mood']
+        userEmotion = data['emotion']
 
         try:
             # 2 Table :
@@ -23,20 +23,18 @@ class UserQuestionnaireAnswerResource(Resource):
             # 2. Mood
             # DbUtils.save_to_db()
             userAnswer = []
-            moodAnswer = []
+            emotionAnswer = []
 
-            for mood in userMood:
-                print(userEmail, userFeeling, userEmotion, mood)
-                # moodAnswer.append({
-                #     'mood': mood,
-                # })
-                moodAnswer.append(mood)
+            for emotion in userEmotion:
+                emotionAnswer.append(emotion)
+            
+            print(userEmail, userFeeling, userMood, userEmotion)
 
             userAnswer.append({
                 'email': userEmail,
                 'feeling': userFeeling,
-                'emotion': userEmotion,
-                'mood': moodAnswer,
+                'mood': userMood,
+                'emotion': emotionAnswer,
             })
 
             return {
@@ -47,4 +45,4 @@ class UserQuestionnaireAnswerResource(Resource):
         
         except Exception as e:
             print("Error:", str(e))
-            return ErrorMessageUtils.bad_request("User registration failed. Please try again.")
+            return ErrorMessageUtils.bad_request("Failed to save questionnaire answer. Please try again.")
