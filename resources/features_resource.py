@@ -1,5 +1,6 @@
 import requests
 import re
+import concurrent.futures
 
 from flask_restful import Resource
 from flask import request, current_app
@@ -37,7 +38,7 @@ class GetBookListResource(Resource):
                     'thumbnail': info.get('imageLinks', {}).get('thumbnail', ''),
                     'preview_link': info.get('previewLink', ''),
                     'pages': info.get('pageCount', ''),
-                    'published_date': info.get('publishedDate', 'Unknown'),
+                    'published_date': self.extract_year(info.get('publishedDate', 'Unknown')),
                     'description': info.get('description', ''),
                     'web_reader': access.get('webReaderLink', ''),
                 })
@@ -49,8 +50,15 @@ class GetBookListResource(Resource):
             }, 200
     
         except Exception as e:
-            print("Error saat mengambil data:", str(e))
+            print("Error fetchin data:", str(e))
             return ErrorMessageUtils.internal_error()
+        
+    def extract_year(self, date):
+        if date == 'Unknown':
+            return date
+        # Cari angka 4 digit pertama
+        match = re.match(r'\d{4}', date)
+        return match.group(0) if match else 'Unknown'
 
 class GetVideoListResource(Resource):
     @staticmethod
@@ -77,14 +85,13 @@ class GetVideoListResource(Resource):
         
         try:
             youtube = build('youtube', 'v3', developerKey=google_api_key)
-            videos = []  # List to store videos
+            videos = []
             
-            # First, search for videos
             search_request = youtube.search().list(
                 part='snippet',
                 q=query,
                 maxResults=50,  # Max limit per request
-                type='video'  # Ensure only videos are returned
+                type='video' 
             )
             search_response = search_request.execute()
             
@@ -187,12 +194,6 @@ class GetSongsListResource(Resource):
             print("Validation error:", str(e))
             return ErrorMessageUtils.internal_error
         
-import concurrent.futures
-import requests
-from flask_restful import Resource
-from flask_jwt_extended import jwt_required
-from flask import request
-
 class GetBookListV2Resource(Resource):
     @jwt_required()
     def get(self):
