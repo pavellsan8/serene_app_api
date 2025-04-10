@@ -280,3 +280,52 @@ class GetBookDetailDataResource(Resource):
         except Exception as e:
             print("Validation error:", str(e))
             return ErrorMessageUtils.internal_error
+
+class GetMusicListResource(Resource):
+    def format_duration(self, seconds):
+        hours = seconds // 3600
+        minutes = (seconds % 3600) // 60
+        remaining_seconds = seconds % 60
+        return f"{hours:02}:{minutes:02}:{remaining_seconds:02}"
+    
+    @jwt_required()
+    def get(self):
+        search = request.args.get('search')
+        client_id = current_app.config.get('JAMENDO_CLIENT_ID')
+
+        if not search or not client_id:
+            return ErrorMessageUtils.bad_request()
+        
+        url = f'https://api.jamendo.com/v3.0/tracks?client_id={client_id}&format=json&search={search}'
+
+        try:
+            response = requests.get(url)
+            data = response.json()  
+
+            if data.get('headers', {}).get('code', None) != 0:
+                return ErrorMessageUtils.internal_error()
+            
+            musics = []
+            results = data.get('results', [])
+
+            for music in results:
+                duration = music.get('duration')
+                musics.append({
+                    'id': music.get('id'),
+                    'title': music.get('name'),
+                    'audio': music.get('audio'),
+                    'artist': music.get('artist_name'),
+                    'album': music.get('album_name'),
+                    'thumbnail': music.get('image'),
+                    'duration': self.format_duration(duration),
+                })
+            
+            return {
+                'status': 200,
+                'message': 'Music found successfully',
+                'data': musics,
+            }, 200
+    
+        except Exception as e:
+            print("Error fetchin data:", str(e))
+            return ErrorMessageUtils.internal_error()

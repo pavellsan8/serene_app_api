@@ -24,6 +24,7 @@ def initialize_routes(api: Api):
     api.add_resource(GetBookListV2Resource, '/api/v2/get-book-list')
     api.add_resource(GetBookDetailDataResource, '/api/v1/get-book-detail-data')
     api.add_resource(GetVideoListResource, '/api/v1/get-video-list')
-    api.add_resource(GetSongsListResource, '/api/v1/get-song-list')
+    api.add_resource(GetMusicListResource, '/api/v1/get-song-list')
+    api.add_resource(GetSongsListResource, '/api/v2/get-song-list')
 
     api.add_resource(UserProfileDataResource, '/api/v1/user-profile')
