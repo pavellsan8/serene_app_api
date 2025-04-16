@@ -21,10 +21,15 @@ def initialize_routes(api: Api):
     api.add_resource(UserQuestionnaireAnswerResource, '/api/v1/user-questionnaire-answer')
 
     api.add_resource(GetBookListResource, '/api/v1/get-book-list')
-    api.add_resource(GetBookListV2Resource, '/api/v2/get-book-list')
-    api.add_resource(GetBookDetailDataResource, '/api/v1/get-book-detail-data')
     api.add_resource(GetVideoListResource, '/api/v1/get-video-list')
     api.add_resource(GetMusicListResource, '/api/v1/get-song-list')
-    api.add_resource(GetSongsListResource, '/api/v2/get-song-list')
+
+    api.add_resource(BookFavouriteResource, '/api/v1/book-favourite')
+    api.add_resource(VideoFavouriteResource, '/api/v1/video-favourite')
+    api.add_resource(MusicFavouriteResource, '/api/v1/music-favourite')
+
+    api.add_resource(GetBookFavouriteListResource, '/api/v1/get-book-favourite-list')
+    api.add_resource(GetVideoFavouriteListResource, '/api/v1/get-video-favourite-list')
+    api.add_resource(GetMusicFavouriteListResource, '/api/v1/get-music-favourite-list')
 
     api.add_resource(UserProfileDataResource, '/api/v1/user-profile')
