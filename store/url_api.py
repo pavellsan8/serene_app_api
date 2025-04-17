@@ -22,7 +22,7 @@ def initialize_routes(api: Api):
 
     api.add_resource(GetBookListResource, '/api/v1/get-book-list')
     api.add_resource(GetVideoListResource, '/api/v1/get-video-list')
-    api.add_resource(GetMusicListResource, '/api/v1/get-song-list')
+    api.add_resource(GetMusicListResource, '/api/v1/get-music-list')
 
     api.add_resource(BookFavouriteResource, '/api/v1/book-favourite')
     api.add_resource(VideoFavouriteResource, '/api/v1/video-favourite')
