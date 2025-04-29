@@ -34,6 +34,8 @@ except:
     app.config['GOOGLE_API_KEY'] = os.getenv("GOOGLE_BOOKS_API_KEY")
     app.config['JAMENDO_CLIENT_ID'] = os.getenv("JAMENDO_CLIENT_ID") 
 
+    app.config['OPENAI_API_KEY'] = os.getenv("OPENAI_API_KEY")
+
 # Settings file
 api = Api(app)
 db.init_app(app)

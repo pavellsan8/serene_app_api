@@ -7,6 +7,7 @@ from googleapiclient.discovery import build
 from flask_jwt_extended import jwt_required
 
 from helpers.error_message import ErrorMessageUtils
+from helpers.function_utils import DbUtils
 from schemas.user_profile_schema import UserFavouriteSchema
 
 class GetBookListResource(Resource):

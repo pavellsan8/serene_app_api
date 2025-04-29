@@ -20,7 +20,6 @@ class DbUtils:
         except Exception as e:
             db.session.rollback()
             raise e
-        
 
     @staticmethod
     def update_in_db(instance):
