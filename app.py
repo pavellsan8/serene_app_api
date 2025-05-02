@@ -32,7 +32,8 @@ except:
     app.config['MAIL_DEFAULT_SENDER'] = os.getenv("MAIL_DEFAULT_SENDER")
 
     app.config['GOOGLE_API_KEY'] = os.getenv("GOOGLE_BOOKS_API_KEY")
-    app.config['JAMENDO_CLIENT_ID'] = os.getenv("JAMENDO_CLIENT_ID") 
+    app.config['JAMENDO_CLIENT_ID'] = os.getenv("JAMENDO_CLIENT_ID")
+    app.config['OPENAI_API_KEY'] = os.getenv("OPENAI_API_KEY") 
 
     app.config['OPENAI_API_KEY'] = os.getenv("OPENAI_API_KEY")
 

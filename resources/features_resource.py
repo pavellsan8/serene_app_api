@@ -9,6 +9,8 @@ from flask_jwt_extended import jwt_required
 from helpers.error_message import ErrorMessageUtils
 from helpers.function_utils import DbUtils
 from schemas.user_profile_schema import UserFavouriteSchema
+from schemas.chatbot_schema import UserInputChatbotSchema
+from store.openai import get_openai_client
 
 class GetBookListResource(Resource):
     @jwt_required()
@@ -508,6 +510,61 @@ class GetMusicFavouriteListResource(Resource):
             'email': email,
             'data': musics,
         }, 200
+    
+class ChatbotGeneratedResponseResource(Resource):
+    @jwt_required()
+    def post(self):
+        try: 
+            data = UserInputChatbotSchema().load(request.get_json())
+        except:
+            return ErrorMessageUtils.bad_request('Invalid input data')
+
+        userInput = data['user_input']
+        print ("User input:", userInput)
+
+        client = get_openai_client()
+        response = client.responses.create(
+            model="gpt-4.1",
+            input=[
+                {
+                    "role": "system",
+                    "content": [
+                        {
+                        "type": "input_text",
+                        "text": "You are a virtual mental health assistant who is friendly, empathetic, and supportive. Your task is to listen and respond to users’ questions or concerns in a way that feels human, relatable, and relevant.\n\nUse a warm yet professional tone, and adapt your approach based on the user’s situation—whether they are stressed, anxious, sad, confused, or simply in need of someone to talk to.\n\nYou do not provide medical diagnoses or treatments, but you can suggest relaxation techniques, offer emotional support, or recommend seeking professional help if needed.\n\nYour responses must:\n- Be as simple and straightforward as possible.\n- Reflective (show that you understand the user's feelings).\n- Tailored to the context of the user’s input, not a generic template.\n- Written in everyday language that is polite and easy to read.\n- Avoid being overly directive or sounding like unsolicited advice.\n\nExample tone:\n- “That must feel really heavy for you...”\n- “You’ve come this far, and that’s something to be proud of.”\n- “Feel free to share more if you’re comfortable.”\n\nIf a user seems highly distressed or shows signs of danger (such as self-harm), respond seriously and empathetically, and gently encourage them to seek professional help without sounding judgmental."
+                        }
+                    ]
+                },
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                        "type": "input_text",
+                        "text": userInput
+                        }
+                    ]
+                }
+            ],
+            text={
+                "format": {
+                "type": "text"
+                }
+            },
+            reasoning={},
+            tools=[],
+            temperature=1,
+            max_output_tokens=2048,
+            top_p=1,
+            store=True
+            )
+        
+        response_text = response.output[0].content[0].text
+
+        return {
+            'status': 200,
+            'message': 'Chatbot response generated successfully',
+            'response': response_text,
+        }, 200
         
 def extract_year(date):
     if date == 'Unknown':
@@ -533,4 +590,6 @@ def parse_youtube_duration(duration):
 def format_duration(seconds):
     minutes = (seconds % 3600) // 60
     remaining_seconds = seconds % 60
+    
+    # Format as MM:SS
     return f"{minutes:02}:{remaining_seconds:02}"
