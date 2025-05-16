@@ -37,7 +37,7 @@ class GetBookListResource(Resource):
                 books.append({
                     'id': book.get('id'),
                     'title': info.get('title', 'Unknown'),
-                    'author': info.get('authors', ['Unknown']),
+                    'author': ', '.join(info.get('authors', ['Unknown'])),
                     'thumbnail': info.get('imageLinks', {}).get('thumbnail', ''),
                     'preview_link': info.get('previewLink', ''),
                     'pages': info.get('pageCount', ''),
