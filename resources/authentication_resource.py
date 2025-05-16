@@ -177,12 +177,11 @@ class ResetPasswordResource(Resource):
 
         userEmail = data['email']
         newPassword = data['password']
-        passwordDb = UsersModel.hash_password(newPassword)
 
-        print(userEmail, passwordDb)
+        print(userEmail, newPassword)
 
         try:
-            # UsersModel.updateUserPassword(userEmail, passwordDb)
+            UsersModel.updateUserPassword(userEmail, newPassword)
             return {
                 'status': 200,
                 'message': 'Your password has been successfully reset.'

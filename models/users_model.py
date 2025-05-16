@@ -4,7 +4,7 @@ from werkzeug.security import generate_password_hash
 from store.db import db
 
 class UsersModel(db.Model):
-    __tablename__ = 'users'
+    __tablename__ = 'User'
 
     user_id = db.Column(db.Integer, primary_key=True)
     user_name = db.Column(db.String(100), nullable=False)
@@ -36,7 +36,6 @@ class UsersModel(db.Model):
         
         if user:
             user.user_password = cls.hash_password(password)
-            db.session.add(user)
             db.session.commit()
             return True
 

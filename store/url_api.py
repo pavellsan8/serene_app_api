@@ -18,6 +18,7 @@ def initialize_routes(api: Api):
     api.add_resource(UserLogoutResource, '/api/v1/logout-user')
     api.add_resource(DeleteUserDataResource, '/api/v1/delete-user')
 
+    api.add_resource(GetListEmotionResource, '/api/v1/get-list-emotion')
     api.add_resource(UserQuestionnaireAnswerResource, '/api/v1/user-questionnaire-answer')
 
     api.add_resource(GetBookListResource, '/api/v1/get-book-list')

@@ -40,8 +40,8 @@ def create_app():
     api = Api(app)
 
     # Create tables
-    with app.app_context():
-        db.create_all()
+    # with app.app_context():
+    #     db.create_all()
 
     # Initialize routes
     initialize_routes(api)
