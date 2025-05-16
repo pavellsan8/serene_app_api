@@ -14,25 +14,18 @@ class UserProfileDataResource(Resource):
         except:
             return ErrorMessageUtils.bad_request
         
-        # userEmail = data['email']
-        # userData = UsersModel.getEmailFirst(userEmail)
+        userData = UsersModel.getEmailFirst(userEmail)
 
-        # if not userData:
-        #     return ErrorMessageUtils.not_found
+        if not userData:
+            return ErrorMessageUtils.not_found("User data not found.")
         
-        # return {
-        #     "status": 200,
-        #     "message": "User data retrieved successfully.",
-        #     "data": userData.to_dict(),
-        # }, 200
-        
+        userName = userData.user_name
         return {
             "status": 200,
             "message": "User data retrieved successfully.",
             "data": {
-                "name": "John Doe",
+                "name": userName,
                 "email": userEmail,
-                "phoneNum": "+0 123 456 789",
             }
         }, 200
 
@@ -45,20 +38,17 @@ class UserProfileDataResource(Resource):
         
         userName = data['name']
         userEmail = data['email']
-        userPhNum = data['phone_number']
 
         try:
-            # UsersModel.updateUserProfile(userName, userEmail, userPhNum)
+            UsersModel.updateUserProfile(userName, userEmail)
             return {
                 "status": 200,
                 "message": "User profile updated successfully.",
                 "data": {
                     "name": userName,
                     "email": userEmail,
-                    "phoneNumber": userPhNum,
                 }
             }, 200
-        
         except Exception as e:
             print("Validation error:", str(e))
             return ErrorMessageUtils.bad_request
@@ -71,13 +61,13 @@ class UserProfileDataResource(Resource):
             return ErrorMessageUtils.bad_request
         
         userEmail = data['email']
-        # userData = UsersModel.getEmailFirst(userEmail)
+        userData = UsersModel.getEmailFirst(userEmail)
 
-        # if userData:
-        #     UsersModel.deleteUser(userData)
-        return {
-            "status": 200,
-            "message": "User data deleted successfully.",
-        }, 200
-        # else:
-        #     return ErrorMessageUtils.not_found
+        if userData:
+            UsersModel.deleteUser(userData)
+            return {
+                "status": 200,
+                "message": "User data deleted successfully.",
+            }, 200
+        else:
+            return ErrorMessageUtils.not_found
