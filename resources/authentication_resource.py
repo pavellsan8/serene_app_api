@@ -1,6 +1,6 @@
 import random
 
-from flask import request
+from flask import current_app, request
 from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, jwt_required
 from flask_restful import Resource
 from flask_mail import Message
@@ -10,44 +10,45 @@ from werkzeug.security import check_password_hash
 
 from helpers.error_message import *
 from helpers.function_utils import DbUtils
-from models.mtusers_model import *
+from models.users_model import *
 from schemas.authentication_schema import *
 
 class UserRegisterResource(Resource):
     def post(self):
         try:
             data = UserRegisterSchema().load(request.get_json())
-        except:
-            return ErrorMessageUtils.bad_request
-        
+        except Exception as e:
+            return ErrorMessageUtils.bad_request("Invalid input data. Please check your request and try again.")
+
         nameRegis = data['name']
         emailRegis = data['email']
         passwordRegis = data['password']
-        passwordHash = MtUsersModel.hash_password(passwordRegis)
+        passwordHash = UsersModel.hash_password(passwordRegis)
 
-        print(nameRegis, emailRegis, passwordRegis, passwordHash)
-
-        # save to database
-        # checkEmail = MtUsersModel.getEmailFirst(emailRegis)
-        # if checkEmail is None:
-        #     userRegisData = MtUsersModel(
-        #         userName = nameRegis, 
-        #         userEmail = emailRegis, 
-        #         userPassword = passwordHash,
-        #     )
-
-        try:
-            # DbUtils.save_to_db(userRegisData)
-            return {
-                "status": 200,
-                "message": "User registration completed successfully."
-            }, 200
-        except Exception as e:
-            print("Error:", str(e))
-            return ErrorMessageUtils.bad_request("User registration failed. Please try again.")
+        print(f"Registering user: {nameRegis}, {emailRegis}, {passwordHash}")
         
-        # else:
-        #     return ErrorMessageUtils.bad_request("The provided email is already in use. Please choose another email.")
+        with current_app.app_context():
+            checkEmail = UsersModel.getEmailFirst(emailRegis)
+            print(checkEmail)
+            if checkEmail is None:
+                userRegisData = UsersModel(
+                    user_name=nameRegis, 
+                    user_email=emailRegis, 
+                    user_password=passwordHash,
+                )
+
+                try:
+                    DbUtils.save_to_db(userRegisData)
+                    return {
+                        "status": 200,
+                        "message": "User registration completed successfully."
+                    }, 200
+                except Exception as e:
+                    print("Error:", str(e))
+                    return ErrorMessageUtils.bad_request("User registration failed. Please try again.")
+            
+            else:
+                return ErrorMessageUtils.bad_request("The provided email is already in use. Please choose another email.")
 
 class UserLoginResource(Resource):
     def post(self):
@@ -58,55 +59,51 @@ class UserLoginResource(Resource):
         
         emailLogin = data["email"]
         passwordInput = data["password"]
-        passwordInputCheck = MtUsersModel.hash_password(passwordInput)
-
-        print(emailLogin, passwordInput, passwordInputCheck)
+        print(emailLogin, passwordInput)
 
         # find user data in database
-        # checkUser = MtUsersModel.getEmailFirst(emailLogin)
+        checkUser = UsersModel.getEmailFirst(emailLogin)
+        print(checkUser)
 
-        # if checkUser is not None:
-        #     passwordRegistered = checkUser.userPassword
-        #     passwordLoginCheck = check_password_hash(passwordRegistered, passwordInputCheck)
+        if checkUser is not None:
+            passwordRegistered = checkUser.user_password
+            passwordLoginCheck = check_password_hash(passwordRegistered, passwordInput)
+            print(passwordLoginCheck)
 
-        #     if passwordLoginCheck:
-        #         create access token and refresh token
-        try:
-            expiresAccessToken = timedelta(days=1)
-            expiresRefreshToken = timedelta(days=90)
+            if passwordLoginCheck:
+                # create access token and refresh token
+                try:
+                    expiresAccessToken = timedelta(days=1)
+                    expiresRefreshToken = timedelta(days=90)
 
-            access_token = create_access_token(
-                identity=emailLogin,
-                expires_delta=expiresAccessToken,
-            )
+                    access_token = create_access_token(
+                        identity=emailLogin,
+                        expires_delta=expiresAccessToken,
+                    )
 
-            refresh_token = create_refresh_token(
-                identity=emailLogin,
-                expires_delta=expiresRefreshToken,
-            )
+                    refresh_token = create_refresh_token(
+                        identity=emailLogin,
+                        expires_delta=expiresRefreshToken,
+                    )
 
-            # userId = checkUser.userId
-            # userEmail = checkUser.userEmail
-            # MtUsersModel.updateLoginTime(userId, userEmail)
-            return {
-                "status": 200,
-                "message": "Login successful. Welcome back!",
-                "data": {
-                    "email": emailLogin,
-                    "access_token": access_token,
-                    "refresh_token": refresh_token,
-                }
-            }, 200
-        
-        except Exception as e:
-            print("Error:", str(e))
-            return ErrorMessageUtils.bad_request("Login failed... please try again.")
-            
-        #     else:
-        #         return ErrorMessageUtils.bad_request("Invalid credentials. Please check your email and password and try again.")
+                    return {
+                        "status": 200,
+                        "message": "Login successful. Welcome back!",
+                        "data": {
+                            "email": emailLogin,
+                            "access_token": access_token,
+                            "refresh_token": refresh_token,
+                        }
+                    }, 200
                 
-        # else:
-        #     return ErrorMessageUtils.not_found("The email you entered is not registered. Please sign up to create an account.")
+                except Exception as e:
+                    print("Error:", str(e))
+                    return ErrorMessageUtils.bad_request("Login failed... please try again.")
+            else:
+                return ErrorMessageUtils.bad_request("Invalid credentials. Please check your email and password and try again.")
+                
+        else:
+            return ErrorMessageUtils.not_found("The email you entered is not registered. Please sign up to create an account.")
 
 class UserLogoutResource(Resource):
     @jwt_required()
@@ -154,7 +151,7 @@ class SendEmailOtpVerificationResource(Resource):
             email = data["email"]
 
             # untuk search email di database
-            # emailData = MtUsersModel.getEmailFirst(email)
+            # emailData = UsersModel.getEmailFirst(email)
             # if not emailData:
             #     return ErrorMessageUtils.not_found("This email is not registered. Please check and try again.")
 
@@ -180,12 +177,12 @@ class ResetPasswordResource(Resource):
 
         userEmail = data['email']
         newPassword = data['password']
-        passwordDb = MtUsersModel.hash_password(newPassword)
+        passwordDb = UsersModel.hash_password(newPassword)
 
         print(userEmail, passwordDb)
 
         try:
-            # MtUsersModel.updateUserPassword(userEmail, passwordDb)
+            # UsersModel.updateUserPassword(userEmail, passwordDb)
             return {
                 'status': 200,
                 'message': 'Your password has been successfully reset.'
@@ -201,8 +198,8 @@ class DeleteUserDataResource(Resource):
             data = GetEmailDataSchema().load(request.get_json())
             email = data["email"]
 
-            # if MtUsersModel.getEmailFirst(email):
-            #     MtUsersModel.deleteUser(email)
+            # if UsersModel.getEmailFirst(email):
+            #     UsersModel.deleteUser(email)
             # else:
             #     return ErrorMessageUtils.not_found("This email is not registered. Please check and try again.")
             

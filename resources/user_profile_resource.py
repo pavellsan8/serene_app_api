@@ -2,7 +2,7 @@ from flask_restful import Resource
 from flask import request
 from flask_jwt_extended import jwt_required
 
-from models.mtusers_model import MtUsersModel
+from models.users_model import UsersModel
 from schemas.user_profile_schema import *
 from helpers.error_message import ErrorMessageUtils
 
@@ -15,7 +15,7 @@ class UserProfileDataResource(Resource):
             return ErrorMessageUtils.bad_request
         
         # userEmail = data['email']
-        # userData = MtUsersModel.getEmailFirst(userEmail)
+        # userData = UsersModel.getEmailFirst(userEmail)
 
         # if not userData:
         #     return ErrorMessageUtils.not_found
@@ -48,7 +48,7 @@ class UserProfileDataResource(Resource):
         userPhNum = data['phone_number']
 
         try:
-            # MtUsersModel.updateUserProfile(userName, userEmail, userPhNum)
+            # UsersModel.updateUserProfile(userName, userEmail, userPhNum)
             return {
                 "status": 200,
                 "message": "User profile updated successfully.",
@@ -71,10 +71,10 @@ class UserProfileDataResource(Resource):
             return ErrorMessageUtils.bad_request
         
         userEmail = data['email']
-        # userData = MtUsersModel.getEmailFirst(userEmail)
+        # userData = UsersModel.getEmailFirst(userEmail)
 
         # if userData:
-        #     MtUsersModel.deleteUser(userData)
+        #     UsersModel.deleteUser(userData)
         return {
             "status": 200,
             "message": "User data deleted successfully.",

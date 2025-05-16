@@ -1,6 +1,4 @@
-from flask_sqlalchemy import SQLAlchemy
-
-db = SQLAlchemy()
+from store.db import db
 
 class DbUtils:
     @staticmethod
