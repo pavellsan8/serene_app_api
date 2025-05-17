@@ -41,7 +41,7 @@ class UserRegisterResource(Resource):
                     DbUtils.save_to_db(userRegisData)
                     return {
                         "status": 200,
-                        "message": "User registration completed successfully."
+                        "message": "Successfully registered your account."
                     }, 200
                 except Exception as e:
                     print("Error:", str(e))
@@ -59,16 +59,18 @@ class UserLoginResource(Resource):
         
         emailLogin = data["email"]
         passwordInput = data["password"]
-        print(emailLogin, passwordInput)
+        # print(emailLogin, passwordInput)
 
         # find user data in database
         checkUser = UsersModel.getEmailFirst(emailLogin)
-        print(checkUser)
+        # print(checkUser)
 
         if checkUser is not None:
+            userId = checkUser.user_id 
+            submitQuestionnaire = checkUser.submit_questionnaire
             passwordRegistered = checkUser.user_password
             passwordLoginCheck = check_password_hash(passwordRegistered, passwordInput)
-            print(passwordLoginCheck)
+            # print(passwordLoginCheck)
 
             if passwordLoginCheck:
                 # create access token and refresh token
@@ -76,23 +78,29 @@ class UserLoginResource(Resource):
                     expiresAccessToken = timedelta(days=1)
                     expiresRefreshToken = timedelta(days=90)
 
+                    # Add userId to the token's claims
+                    additional_claims = {"user_id": userId}
+
                     access_token = create_access_token(
                         identity=emailLogin,
+                        additional_claims=additional_claims,
                         expires_delta=expiresAccessToken,
                     )
 
                     refresh_token = create_refresh_token(
                         identity=emailLogin,
+                        additional_claims=additional_claims,
                         expires_delta=expiresRefreshToken,
                     )
 
                     return {
                         "status": 200,
-                        "message": "Login successful. Welcome back!",
+                        "message": "Successfully logged in to your account.",
                         "data": {
                             "email": emailLogin,
                             "access_token": access_token,
                             "refresh_token": refresh_token,
+                            "submit_questionnaire": submitQuestionnaire,
                         }
                     }, 200
                 

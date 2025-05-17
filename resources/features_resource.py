@@ -4,7 +4,7 @@ import re
 from flask_restful import Resource
 from flask import request, current_app
 from googleapiclient.discovery import build
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt
 
 from helpers.error_message import ErrorMessageUtils
 from helpers.function_utils import DbUtils
@@ -190,6 +190,8 @@ class BookFavouriteResource(Resource):
         except:
             return ErrorMessageUtils.bad_request('Invalid input data')
         
+        claims = get_jwt()
+        userId = claims.get("user_id")
         userEmail = data['email']
         bookId = data['item_id']
 
@@ -199,6 +201,7 @@ class BookFavouriteResource(Resource):
             return {
                 'status': 200,
                 'message': 'Book added to favourites successfully',
+                'user_id': userId,
                 'email': userEmail,
                 'book_id': bookId
             }, 200
@@ -213,6 +216,8 @@ class BookFavouriteResource(Resource):
         except:
             return ErrorMessageUtils.bad_request('Invalid input data')
         
+        claims = get_jwt()
+        userId = claims.get("user_id")
         userEmail = data['email']
         bookId = data['item_id']
 
@@ -222,6 +227,7 @@ class BookFavouriteResource(Resource):
             return {
                 'status': 200,
                 'message': 'Book removed from favourites successfully',
+                'user_id': userId,
                 'email': userEmail,
                 'book_id': bookId
             }, 200
@@ -237,6 +243,8 @@ class VideoFavouriteResource(Resource):
         except:
             return ErrorMessageUtils.bad_request('Invalid input data')
         
+        claims = get_jwt()
+        userId = claims.get("user_id")
         userEmail = data['email']
         videoId = data['item_id']
 
@@ -246,6 +254,7 @@ class VideoFavouriteResource(Resource):
             return {
                 'status': 200,
                 'message': 'Video added to favourites successfully',
+                'user_id': userId,
                 'email': userEmail,
                 'video_id': videoId
             }, 200
@@ -260,6 +269,8 @@ class VideoFavouriteResource(Resource):
         except:
             return ErrorMessageUtils.bad_request('Invalid input data')
         
+        claims = get_jwt()
+        userId = claims.get("user_id")
         userEmail = data['email']
         videoId = data['item_id']
 
@@ -269,6 +280,7 @@ class VideoFavouriteResource(Resource):
             return {
                 'status': 200,
                 'message': 'Video removed from favourites successfully',
+                'user_id': userId,
                 'email': userEmail,
                 'video_id': videoId
             }, 200
@@ -284,6 +296,8 @@ class MusicFavouriteResource(Resource):
         except:
             return ErrorMessageUtils.bad_request('Invalid input data')
         
+        claims = get_jwt()
+        userId = claims.get("user_id")
         userEmail = data['email']
         musicId = data['item_id']
 
@@ -293,6 +307,7 @@ class MusicFavouriteResource(Resource):
             return {
                 'status': 200,
                 'message': 'Music added to favourites successfully',
+                'user_id': userId,
                 'email': userEmail,
                 'music_id': musicId
             }, 200
@@ -307,6 +322,8 @@ class MusicFavouriteResource(Resource):
         except:
             return ErrorMessageUtils.bad_request('Invalid input data')
         
+        claims = get_jwt()
+        userId = claims.get("user_id")
         userEmail = data['email']
         musicId = data['item_id']
 
@@ -316,6 +333,7 @@ class MusicFavouriteResource(Resource):
             return {
                 'status': 200,
                 'message': 'Music removed from favourites successfully',
+                'user_id': userId,
                 'email': userEmail,
                 'music_id': musicId
             }, 200
@@ -326,15 +344,10 @@ class MusicFavouriteResource(Resource):
 class GetBookFavouriteListResource(Resource):
     @jwt_required()
     def get(self):
-        # try:
-        #     data = UserDataSchema().load(request.get_json())
-        # except:
-        #     return ErrorMessageUtils.bad_request
-        
         email = request.args.get('email', '')
         if not email:
             return ErrorMessageUtils.bad_request('Email is required')
-        # email = data.get('email')
+        
         google_api_key = current_app.config.get('GOOGLE_API_KEY')
 
         # Example book IDs for testing
@@ -384,17 +397,11 @@ class GetBookFavouriteListResource(Resource):
             
 class GetVideoFavouriteListResource(Resource):
     @jwt_required()
-    def get(self):
-        # try:
-        #     data = UserDataSchema().load(request.get_json())
-        # except:
-        #     return ErrorMessageUtils.bad_request
-        
+    def get(self):        
         email = request.args.get('email')
         if not email:
             return ErrorMessageUtils.bad_request('Email is required')
         
-        # email = data.get('email')
         google_api_key = current_app.config.get('GOOGLE_API_KEY')
 
         # Example video IDs for testing
@@ -458,15 +465,10 @@ class GetVideoFavouriteListResource(Resource):
 class GetMusicFavouriteListResource(Resource):
     @jwt_required()
     def get(self):
-        # try:
-        #     data = UserDataSchema().load(request.get_json())
-        # except:
-        #     return ErrorMessageUtils.bad_request
-
         email = request.args.get('email', '')
         if not email:
             return ErrorMessageUtils.bad_request('Email is required')
-        # email = data.get('email')
+        
         client_id = current_app.config.get('JAMENDO_CLIENT_ID')
 
         # Example music IDs for testing
@@ -530,8 +532,8 @@ class ChatbotGeneratedResponseResource(Resource):
                     "role": "system",
                     "content": [
                         {
-                        "type": "input_text",
-                        "text": "You are a virtual mental health assistant who is friendly, empathetic, and supportive. Your task is to listen and respond to users’ questions or concerns in a way that feels human, relatable, and relevant.\n\nUse a warm yet professional tone, and adapt your approach based on the user’s situation—whether they are stressed, anxious, sad, confused, or simply in need of someone to talk to.\n\nYou do not provide medical diagnoses or treatments, but you can suggest relaxation techniques, offer emotional support, or recommend seeking professional help if needed.\n\nYour responses must:\n- Be as simple and straightforward as possible.\n- Reflective (show that you understand the user's feelings).\n- Tailored to the context of the user’s input, not a generic template.\n- Written in everyday language that is polite and easy to read.\n- Avoid being overly directive or sounding like unsolicited advice.\n\nExample tone:\n- “That must feel really heavy for you...”\n- “You’ve come this far, and that’s something to be proud of.”\n- “Feel free to share more if you’re comfortable.”\n\nIf a user seems highly distressed or shows signs of danger (such as self-harm), respond seriously and empathetically, and gently encourage them to seek professional help without sounding judgmental."
+                            "type": "input_text",
+                            "text": "You are a virtual mental health assistant who is friendly, empathetic, and supportive. Your task is to listen and respond to users’ questions or concerns in a way that feels human, relatable, and relevant.\n\nUse a warm yet professional tone, and adapt your approach based on the user’s situation—whether they are stressed, anxious, sad, confused, or simply in need of someone to talk to.\n\nYou do not provide medical diagnoses or treatments, but you can suggest relaxation techniques, offer emotional support, or recommend seeking professional help if needed.\n\nIf the input message didn't related to mental health, the answer must be like this :\n\"I’d love to help where I can, but my focus is on mental health and emotional well-being. If there’s something along those lines you’d like to talk about, I’m here for you.\"\n\nYour responses must:\n- Be as simple and straightforward as possible.\n- Reflective (show that you understand the user's feelings).\n- Tailored to the context of the user’s input, not a generic template.\n- Written in everyday language that is polite and easy to read.\n- Avoid being overly directive or sounding like unsolicited advice.\n\nExample tone:\n- “That must feel really heavy for you...”\n- “You’ve come this far, and that’s something to be proud of.”\n- “Feel free to share more if you’re comfortable.”\n\nIf a user seems highly distressed or shows signs of danger (such as self-harm), respond seriously and empathetically, and gently encourage them to seek professional help without sounding judgmental."
                         }
                     ]
                 },
@@ -539,8 +541,8 @@ class ChatbotGeneratedResponseResource(Resource):
                     "role": "user",
                     "content": [
                         {
-                        "type": "input_text",
-                        "text": userInput
+                            "type": "input_text",
+                            "text": userInput
                         }
                     ]
                 }
@@ -556,7 +558,7 @@ class ChatbotGeneratedResponseResource(Resource):
             max_output_tokens=2048,
             top_p=1,
             store=True
-            )
+        )
         
         response_text = response.output[0].content[0].text
 
