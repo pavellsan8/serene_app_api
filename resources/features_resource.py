@@ -6,6 +6,9 @@ from flask import request, current_app
 from googleapiclient.discovery import build
 from flask_jwt_extended import jwt_required, get_jwt
 
+from models.bookfavourite_model import BookFavouriteModel
+from models.videofavourite_model import VideoFavouriteModel
+from models.musicfavourite_model import MusicFavouriteModel
 from helpers.error_message import ErrorMessageUtils
 from helpers.function_utils import DbUtils
 from schemas.user_profile_schema import UserFavouriteSchema
@@ -196,8 +199,15 @@ class BookFavouriteResource(Resource):
         bookId = data['item_id']
 
         try :
+            favouriteData = BookFavouriteModel(
+                user_id=userId,
+                book_id=bookId
+            )
+
             # Simulate saving to database
+            DbUtils.save_to_db(favouriteData)
             print(f"Saving book ID {bookId} for user {userEmail}")
+            
             return {
                 'status': 200,
                 'message': 'Book added to favourites successfully',
@@ -205,6 +215,7 @@ class BookFavouriteResource(Resource):
                 'email': userEmail,
                 'book_id': bookId
             }, 200
+        
         except Exception as e:
             print("Error saving data:", str(e))
             return ErrorMessageUtils.internal_error('An error occurred while adding to favorites')
@@ -222,8 +233,13 @@ class BookFavouriteResource(Resource):
         bookId = data['item_id']
 
         try :
-            # Simulate saving to database
-            print(f"Deleting book ID {bookId} for user {userEmail}")
+            # Simulate deleting from database
+            favouriteData = BookFavouriteModel.getBookFirstFavourite(userId, bookId)
+
+            if favouriteData:
+                DbUtils.delete_from_db(favouriteData)
+                print(f"Deleting book ID {bookId} for user {userEmail}")
+
             return {
                 'status': 200,
                 'message': 'Book removed from favourites successfully',
@@ -231,6 +247,7 @@ class BookFavouriteResource(Resource):
                 'email': userEmail,
                 'book_id': bookId
             }, 200
+
         except Exception as e:
             print("Error saving data:", str(e))
             return ErrorMessageUtils.internal_error('An error occurred while removing from favorites')
@@ -249,8 +266,15 @@ class VideoFavouriteResource(Resource):
         videoId = data['item_id']
 
         try :
+            favouriteData = VideoFavouriteModel(
+                user_id=userId,
+                video_id=videoId
+            )
+
             # Simulate saving to database
+            DbUtils.save_to_db(favouriteData)
             print(f"Saving video ID {videoId} for user {userEmail}")
+            
             return {
                 'status': 200,
                 'message': 'Video added to favourites successfully',
@@ -258,6 +282,7 @@ class VideoFavouriteResource(Resource):
                 'email': userEmail,
                 'video_id': videoId
             }, 200
+        
         except Exception as e:
             print("Error saving data:", str(e))
             return ErrorMessageUtils.internal_error('An error occurred while adding to favorites')
@@ -275,8 +300,13 @@ class VideoFavouriteResource(Resource):
         videoId = data['item_id']
 
         try :
-            # Simulate saving to database
-            print(f"Deleting video ID {videoId} for user {userEmail}")
+            # Simulate delete from database
+            favouriteData = VideoFavouriteModel.getVideoFirstFavourite(userId, videoId)
+
+            if favouriteData:
+                DbUtils.delete_from_db(favouriteData)
+                print(f"Deleting video ID {videoId} for user {userEmail}")
+                
             return {
                 'status': 200,
                 'message': 'Video removed from favourites successfully',
@@ -284,6 +314,7 @@ class VideoFavouriteResource(Resource):
                 'email': userEmail,
                 'video_id': videoId
             }, 200
+        
         except Exception as e:
             print("Error saving data:", str(e))
             return ErrorMessageUtils.internal_error('An error occurred while removing from favorites')
@@ -302,8 +333,15 @@ class MusicFavouriteResource(Resource):
         musicId = data['item_id']
 
         try :
+            favouriteData = MusicFavouriteModel(
+                user_id=userId,
+                music_id=musicId
+            )
+
             # Simulate saving to database
+            DbUtils.save_to_db(favouriteData)
             print(f"Saving music ID {musicId} for user {userEmail}")
+            
             return {
                 'status': 200,
                 'message': 'Music added to favourites successfully',
@@ -311,6 +349,7 @@ class MusicFavouriteResource(Resource):
                 'email': userEmail,
                 'music_id': musicId
             }, 200
+        
         except Exception as e:
             print("Error saving data:", str(e))
             return ErrorMessageUtils.internal_error('An error occurred while adding to favorites')
@@ -329,7 +368,12 @@ class MusicFavouriteResource(Resource):
 
         try :
             # Simulate saving to database
-            print(f"Deleting music ID {musicId} for user {userEmail}")
+            favouriteData = MusicFavouriteModel.getMusicFirstFavourite(userId, musicId)
+    
+            if favouriteData:
+                DbUtils.delete_from_db(favouriteData)
+                print(f"Deleting music ID {musicId} for user {userEmail}")
+    
             return {
                 'status': 200,
                 'message': 'Music removed from favourites successfully',
@@ -337,6 +381,7 @@ class MusicFavouriteResource(Resource):
                 'email': userEmail,
                 'music_id': musicId
             }, 200
+        
         except Exception as e:
             print("Error saving data:", str(e))
             return ErrorMessageUtils.internal_error('An error occurred while removing from favorites')

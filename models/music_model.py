@@ -10,8 +10,4 @@ class MusicModel(db.Model):
     album = db.Column(db.Integer, nullable=False)
     thumbnail = db.Column(db.String(100), nullable=False)
     duration = db.Column(db.String(100), nullable=False)
-    category_id = db.Column(db.Integer, db.ForeignKey('M_Feeling.feeling_id'), nullable=False)
-
-    # Relationship
-    category = db.relationship('MFeelingModel', backref='musics', lazy=True)
-    favourites = db.relationship('MusicFavouriteModel', backref='music', lazy=True)
+    category_id = db.Column(db.Integer, nullable=False)

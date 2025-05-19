@@ -1,7 +1,7 @@
 import random
 
 from flask import current_app, request
-from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, jwt_required
+from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, jwt_required, get_jwt
 from flask_restful import Resource
 from flask_mail import Message
 from store.mail import Mail
@@ -223,8 +223,10 @@ class RefreshTokenResource(Resource):
     @jwt_required(refresh=True) 
     def post(self):
         identity = get_jwt_identity()
+        claims = get_jwt()
         new_access_token = create_access_token(
             identity=identity, 
+            additional_claims={"user_id": claims.get("user_id")},
             expires_delta=timedelta(days=1)
         )
         return {
