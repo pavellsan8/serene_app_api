@@ -39,4 +39,8 @@ def initialize_routes(api: Api):
     api.add_resource(GetVideoFavouriteListResource, '/api/v1/get-video-favourite-list')
     api.add_resource(GetMusicFavouriteListResource, '/api/v1/get-music-favourite-list')
 
+    api.add_resource(GetBookFavouriteListV2Resource, '/api/v2/get-book-favourite-list')
+    api.add_resource(GetVideoFavouriteListV2Resource, '/api/v2/get-video-favourite-list')
+    api.add_resource(GetMusicFavouriteListV2Resource, '/api/v2/get-music-favourite-list')
+
     api.add_resource(UserProfileDataResource, '/api/v1/user-profile')

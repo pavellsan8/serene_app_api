@@ -45,6 +45,7 @@ class UserQuestionnaireAnswerResource(Resource):
 
                 try: 
                     DbUtils.save_to_db(questionnaireAnswer)
+                    UsersModel.updateStatusSubmitQuestionnaire(userEmail)
                 except Exception as e:
                     print("Error:", str(e))
                     return ErrorMessageUtils.bad_request("Failed to save questionnaire answer. Please try again.")

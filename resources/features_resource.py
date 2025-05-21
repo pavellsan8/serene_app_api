@@ -1,3 +1,4 @@
+import datetime
 import requests
 import re
 
@@ -264,10 +265,15 @@ class BookFavouriteResource(Resource):
         userEmail = data['email']
         bookId = data['item_id']
 
+        favouriteData = BookFavouriteModel.getBookFirstFavourite(userId, bookId)
+        if favouriteData:
+            return ErrorMessageUtils.bad_request('Book already in favourites')
+
         try :
             favouriteData = BookFavouriteModel(
                 user_id=userId,
-                book_id=bookId
+                book_id=bookId,
+                saved_at=datetime.datetime.now(datetime.timezone.utc),
             )
 
             # Simulate saving to database
@@ -330,11 +336,16 @@ class VideoFavouriteResource(Resource):
         userId = claims.get("user_id")
         userEmail = data['email']
         videoId = data['item_id']
+        
+        favouriteData = VideoFavouriteModel.getVideoFirstFavourite(userId, videoId)
+        if favouriteData:
+            return ErrorMessageUtils.bad_request('Video already in favourites')
 
         try :
             favouriteData = VideoFavouriteModel(
                 user_id=userId,
-                video_id=videoId
+                video_id=videoId,
+                saved_at=datetime.datetime.now(datetime.timezone.utc),
             )
 
             # Simulate saving to database
@@ -398,10 +409,15 @@ class MusicFavouriteResource(Resource):
         userEmail = data['email']
         musicId = data['item_id']
 
+        favouriteData = MusicFavouriteModel.getMusicFirstFavourite(userId, musicId)
+        if favouriteData:
+            return ErrorMessageUtils.bad_request('Music already in favourites')
+
         try :
             favouriteData = MusicFavouriteModel(
                 user_id=userId,
-                music_id=musicId
+                music_id=musicId,
+                saved_at=datetime.datetime.now(datetime.timezone.utc),
             )
 
             # Simulate saving to database
@@ -623,6 +639,69 @@ class GetMusicFavouriteListResource(Resource):
             'email': email,
             'data': musics,
         }, 200
+
+class GetBookFavouriteListV2Resource(Resource):
+    @jwt_required()
+    def get(self):
+        claims = get_jwt()
+        userId = claims.get("user_id")
+
+        if not userId:
+            return ErrorMessageUtils.bad_request('User ID is required')
+        
+        try:
+            bookData = BookFavouriteModel.getAllBookFavourites(userId)
+            return {
+                'status': 200,
+                'message': 'Favourite book found successfully',
+                'data': bookData['data'],
+            }, 200
+
+        except Exception as e:
+            print("Error fetching data:", str(e))
+            return ErrorMessageUtils.internal_error('An error occurred while fetching favourite book data')
+
+class GetVideoFavouriteListV2Resource(Resource):
+    @jwt_required()
+    def get(self):
+        claims = get_jwt()
+        userId = claims.get("user_id")
+
+        if not userId:
+            return ErrorMessageUtils.bad_request('User ID is required')
+        
+        try:
+            videoData = VideoFavouriteModel.getAllVideoFavourites(userId)
+            return {
+                'status': 200,
+                'message': 'Favourite video found successfully',
+                'data': videoData['data'],
+            }, 200
+
+        except Exception as e:
+            print("Error fetching data:", str(e))
+            return ErrorMessageUtils.internal_error('An error occurred while fetching favourite video data')
+        
+class GetMusicFavouriteListV2Resource(Resource):
+    @jwt_required()
+    def get(self):
+        claims = get_jwt()
+        userId = claims.get("user_id")
+
+        if not userId:
+            return ErrorMessageUtils.bad_request('User ID is required')
+        
+        try:
+            musicData = MusicFavouriteModel.getAllMusicFavourites(userId)
+            return {
+                'status': 200,
+                'message': 'Favourite music found successfully',
+                'data': musicData['data'],
+            }, 200
+
+        except Exception as e:
+            print("Error fetching data:", str(e))
+            return ErrorMessageUtils.internal_error('An error occurred while fetching favourite music data')
     
 class ChatbotGeneratedResponseResource(Resource):
     @jwt_required()

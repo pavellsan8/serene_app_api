@@ -51,3 +51,14 @@ class UsersModel(db.Model):
             return True
 
         return False
+    
+    @classmethod
+    def updateStatusSubmitQuestionnaire(cls, email):
+        user = cls.query.filter_by(user_email=email).first()
+        
+        if user:
+            user.submit_questionnaire = True
+            db.session.commit()
+            return True
+
+        return False

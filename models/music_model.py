@@ -1,4 +1,4 @@
-from sqlalchemy import func
+# from sqlalchemy import func
 from sqlalchemy.orm import aliased
 
 from store.db import db
@@ -36,7 +36,8 @@ class MusicModel(db.Model):
         ).filter(
             a.user_id == user_id,
         ).order_by(
-            func.random()
+            # func.random()
+            b.music_id
         ).all()
 
         return {
