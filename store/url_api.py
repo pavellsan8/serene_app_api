@@ -25,6 +25,10 @@ def initialize_routes(api: Api):
     api.add_resource(GetVideoListResource, '/api/v1/get-video-list')
     api.add_resource(GetMusicListResource, '/api/v1/get-music-list')
 
+    api.add_resource(GetBookListV2Resource, '/api/v2/get-book-list')
+    api.add_resource(GetVideoListV2Resource, '/api/v2/get-video-list')
+    api.add_resource(GetMusicListV2Resource, '/api/v2/get-music-list')
+
     api.add_resource(ChatbotGeneratedResponseResource, '/api/v1/chatbot-response')
 
     api.add_resource(BookFavouriteResource, '/api/v1/book-favourite')

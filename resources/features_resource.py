@@ -6,6 +6,9 @@ from flask import request, current_app
 from googleapiclient.discovery import build
 from flask_jwt_extended import jwt_required, get_jwt
 
+from models.book_model import BookModel
+from models.video_model import VideoModel
+from models.music_model import MusicModel
 from models.bookfavourite_model import BookFavouriteModel
 from models.videofavourite_model import VideoFavouriteModel
 from models.musicfavourite_model import MusicFavouriteModel
@@ -184,6 +187,69 @@ class GetMusicListResource(Resource):
         except Exception as e:
             print("Error fetchin data:", str(e))
             return ErrorMessageUtils.internal_error()
+        
+class GetBookListV2Resource(Resource):
+    @jwt_required()
+    def get(self):
+        claims = get_jwt()
+        userId = claims.get("user_id")
+
+        if not userId:
+            return ErrorMessageUtils.bad_request('User ID is required')
+        
+        try:
+            bookData = BookModel.getBookByFeelingId(userId)
+            return {
+                'status': 200,
+                'message': 'Book found successfully',
+                'data': bookData['data'],
+            }, 200
+
+        except Exception as e:
+            print("Error fetching data:", str(e))
+            return ErrorMessageUtils.internal_error('An error occurred while fetching book data')
+
+class GetVideoListV2Resource(Resource):
+    @jwt_required()
+    def get(self):
+        claims = get_jwt()
+        userId = claims.get("user_id")
+
+        if not userId:
+            return ErrorMessageUtils.bad_request('User ID is required')
+        
+        try:
+            videoData = VideoModel.getVideoByFeelingId(userId)
+            return {
+                'status': 200,
+                'message': 'Video found successfully',
+                'data': videoData['data'],
+            }, 200
+
+        except Exception as e:
+            print("Error fetching data:", str(e))
+            return ErrorMessageUtils.internal_error('An error occurred while fetching video data')
+        
+class GetMusicListV2Resource(Resource):
+    @jwt_required()
+    def get(self):
+        claims = get_jwt()
+        userId = claims.get("user_id")
+
+        if not userId:
+            return ErrorMessageUtils.bad_request('User ID is required')
+        
+        try:
+            musicData = MusicModel.getMusicByFeelingId(userId)
+            return {
+                'status': 200,
+                'message': 'Music found successfully',
+                'data': musicData['data'],
+            }, 200
+
+        except Exception as e:
+            print("Error fetching data:", str(e))
+            return ErrorMessageUtils.internal_error('An error occurred while fetching music data')
 
 class BookFavouriteResource(Resource):
     @jwt_required()
