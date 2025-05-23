@@ -37,7 +37,7 @@ class VideoModel(db.Model):
             a.feeling_id == b.category_id,
         ).filter(
             a.user_id == user_id,
-        ).order_by(
+        ).distinct().order_by(
             # func.random()
             b.video_id
         ).all()

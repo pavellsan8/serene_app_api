@@ -159,9 +159,9 @@ class SendEmailOtpVerificationResource(Resource):
             email = data["email"]
 
             # untuk search email di database
-            # emailData = UsersModel.getEmailFirst(email)
-            # if not emailData:
-            #     return ErrorMessageUtils.not_found("This email is not registered. Please check and try again.")
+            emailData = UsersModel.getEmailFirst(email)
+            if not emailData:
+                return ErrorMessageUtils.not_found("This email is not registered. Please check and try again.")
 
             otp_code = self.generateOtp()
             self.sendEmailOtp(email, otp_code)
