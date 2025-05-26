@@ -6,6 +6,7 @@ from resources.questionnaire_resource import GetListEmotionResource, UserQuestio
 # from resources.features_resource import *
 from resources.book_resource import GetBookListResource, GetBookListV2Resource, BookFavouriteResource, GetBookFavouriteListResource, GetBookFavouriteListV2Resource
 from resources.music_resource import GetMusicListResource, GetMusicListV2Resource, MusicFavouriteResource, GetMusicFavouriteListResource, GetMusicFavouriteListV2Resource
+from resources.video_resource import GetVideoListResource, GetVideoListV2Resource, VideoFavouriteResource, GetVideoFavouriteListResource, GetVideoFavouriteListV2Resource
 from resources.user_profile_resource import UserProfileDataResource
 
 def initialize_routes(api: Api):
@@ -24,25 +25,25 @@ def initialize_routes(api: Api):
     api.add_resource(UserQuestionnaireAnswerResource, '/api/v1/user-questionnaire-answer')
 
     api.add_resource(GetBookListResource, '/api/v1/get-book-list')
-    # api.add_resource(GetVideoListResource, '/api/v1/get-video-list')
+    api.add_resource(GetVideoListResource, '/api/v1/get-video-list')
     api.add_resource(GetMusicListResource, '/api/v1/get-music-list')
 
     api.add_resource(GetBookListV2Resource, '/api/v2/get-book-list')
-    # api.add_resource(GetVideoListV2Resource, '/api/v2/get-video-list')
+    api.add_resource(GetVideoListV2Resource, '/api/v2/get-video-list')
     api.add_resource(GetMusicListV2Resource, '/api/v2/get-music-list')
 
     # api.add_resource(ChatbotGeneratedResponseResource, '/api/v1/chatbot-response')
 
     api.add_resource(BookFavouriteResource, '/api/v1/book-favourite')
-    # api.add_resource(VideoFavouriteResource, '/api/v1/video-favourite')
+    api.add_resource(VideoFavouriteResource, '/api/v1/video-favourite')
     api.add_resource(MusicFavouriteResource, '/api/v1/music-favourite')
 
     api.add_resource(GetBookFavouriteListResource, '/api/v1/get-book-favourite-list')
-    # api.add_resource(GetVideoFavouriteListResource, '/api/v1/get-video-favourite-list')
+    api.add_resource(GetVideoFavouriteListResource, '/api/v1/get-video-favourite-list')
     api.add_resource(GetMusicFavouriteListResource, '/api/v1/get-music-favourite-list')
 
     api.add_resource(GetBookFavouriteListV2Resource, '/api/v2/get-book-favourite-list')
-    # api.add_resource(GetVideoFavouriteListV2Resource, '/api/v2/get-video-favourite-list')
+    api.add_resource(GetVideoFavouriteListV2Resource, '/api/v2/get-video-favourite-list')
     api.add_resource(GetMusicFavouriteListV2Resource, '/api/v2/get-music-favourite-list')
 
     api.add_resource(UserProfileDataResource, '/api/v1/user-profile')
