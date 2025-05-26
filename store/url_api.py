@@ -1,12 +1,12 @@
 from flask_restful import Api
 
 from resources.healthcheckher_resource import HealthCheckerResources
-from resources.authentication_resource import UserLoginResource, UserRegisterResource, SendEmailOtpVerificationResource, ResetPasswordResource, RefreshTokenResource, UserLogoutResource, DeleteUserDataResource
-from resources.questionnaire_resource import GetListEmotionResource, UserQuestionnaireAnswerResource
+from resources.authentication_resource import *
+from resources.questionnaire_resource import *
 # from resources.features_resource import *
-from resources.book_resource import GetBookListResource, GetBookListV2Resource, BookFavouriteResource, GetBookFavouriteListResource, GetBookFavouriteListV2Resource
-from resources.music_resource import GetMusicListResource, GetMusicListV2Resource, MusicFavouriteResource, GetMusicFavouriteListResource, GetMusicFavouriteListV2Resource
-from resources.video_resource import GetVideoListResource, GetVideoListV2Resource, VideoFavouriteResource, GetVideoFavouriteListResource, GetVideoFavouriteListV2Resource
+from resources.book_resource import *
+from resources.music_resource import *
+from resources.video_resource import *
 from resources.user_profile_resource import UserProfileDataResource
 
 def initialize_routes(api: Api):
