@@ -7,6 +7,7 @@ from resources.questionnaire_resource import *
 from resources.book_resource import *
 from resources.music_resource import *
 from resources.video_resource import *
+from resources.chatbot_resource import *
 from resources.user_profile_resource import UserProfileDataResource
 
 def initialize_routes(api: Api):
@@ -32,7 +33,7 @@ def initialize_routes(api: Api):
     api.add_resource(GetVideoListV2Resource, '/api/v2/get-video-list')
     api.add_resource(GetMusicListV2Resource, '/api/v2/get-music-list')
 
-    # api.add_resource(ChatbotGeneratedResponseResource, '/api/v1/chatbot-response')
+    api.add_resource(ChatbotGeneratedResponseResource, '/api/v1/chatbot-response')
 
     api.add_resource(BookFavouriteResource, '/api/v1/book-favourite')
     api.add_resource(VideoFavouriteResource, '/api/v1/video-favourite')
