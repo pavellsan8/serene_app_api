@@ -3,7 +3,6 @@ from flask_restful import Api
 from resources.healthcheckher_resource import HealthCheckerResources
 from resources.authentication_resource import *
 from resources.questionnaire_resource import *
-# from resources.features_resource import *
 from resources.book_resource import *
 from resources.music_resource import *
 from resources.video_resource import *

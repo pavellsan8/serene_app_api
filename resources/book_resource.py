@@ -4,20 +4,13 @@ import re
 
 from flask_restful import Resource
 from flask import request, current_app
-from googleapiclient.discovery import build
 from flask_jwt_extended import jwt_required, get_jwt
 
 from models.book_model import BookModel
-from models.video_model import VideoModel
-from models.music_model import MusicModel
 from models.bookfavourite_model import BookFavouriteModel
-from models.videofavourite_model import VideoFavouriteModel
-from models.musicfavourite_model import MusicFavouriteModel
 from helpers.error_message import ErrorMessageUtils
 from helpers.function_utils import DbUtils
 from schemas.user_profile_schema import UserFavouriteSchema
-from schemas.chatbot_schema import UserInputChatbotSchema
-from store.openai import get_openai_client
 
 class GetBookListResource(Resource):
     @jwt_required()
