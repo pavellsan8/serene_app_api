@@ -188,6 +188,9 @@ class ResetPasswordResource(Resource):
 
         print(userEmail, newPassword)
 
+        if newPassword == "" or newPassword is None:
+            return ErrorMessageUtils.bad_request("New password cannot be empty. Please provide a valid password.")
+        
         try:
             UsersModel.updateUserPassword(userEmail, newPassword)
             return {
