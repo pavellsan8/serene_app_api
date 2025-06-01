@@ -27,6 +27,9 @@ class UserQuestionnaireAnswerResource(Resource):
         userEmail = data['email']
         userEmotion = data['emotion']
 
+        if userEmotion is None or len(userEmotion) == 0:
+            return ErrorMessageUtils.bad_request("Emotion list cannot be empty.")
+
         try:
             userAnswer = []
             emotionAnswer = []
