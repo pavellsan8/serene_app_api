@@ -5,6 +5,7 @@ from models.m_feeling_model import MFeelingModel
 from models.users_model import UsersModel
 from models.questionnaire_model import QuestionnaireModel
 from schemas.questionnaire_schema import *
+from services.questionnaire_service import UserQuestionnaireAnswerService
 from helpers.error_message import ErrorMessageUtils
 from helpers.function_utils import DbUtils
 
@@ -14,7 +15,7 @@ class GetListEmotionResource(Resource):
         return {
             'status': 200,
             'message': 'List of Emotion',
-            'data': MFeelingModel.get_all_feelings(),
+            'data': data,
         }
 
 class UserQuestionnaireAnswerResource(Resource): 
@@ -24,48 +25,12 @@ class UserQuestionnaireAnswerResource(Resource):
         except:
             return ErrorMessageUtils.bad_request()
         
-        userEmail = data['email']
-        userEmotion = data['emotion']
+        userAnswer = UserQuestionnaireAnswerService.submit_answer(data)
+        if isinstance(userAnswer, dict) and 'error' in userAnswer:
+            return userAnswer, 400
 
-        if userEmotion is None or len(userEmotion) == 0:
-            return ErrorMessageUtils.bad_request("Emotion list cannot be empty.")
-
-        try:
-            userAnswer = []
-            emotionAnswer = []
-
-            # Get user ID
-            userData = UsersModel.getEmailFirst(userEmail)
-
-            for emotion in userEmotion:
-                userId = userData.user_id
-                emotionAnswer.append(emotion)
-
-                questionnaireAnswer = QuestionnaireModel(
-                    user_id=userId,
-                    feeling_id=emotion,
-                )
-
-                try: 
-                    DbUtils.save_to_db(questionnaireAnswer)
-                    UsersModel.updateStatusSubmitQuestionnaire(userEmail)
-                except Exception as e:
-                    print("Error:", str(e))
-                    return ErrorMessageUtils.bad_request("Failed to save questionnaire answer. Please try again.")
-            
-            print(userEmail, userEmotion)
-
-            userAnswer.append({
-                'email': userEmail,
-                'emotion': emotionAnswer,
-            })
-
-            return {
-                'status': 200,
-                'message': 'Questionnaire Answered Successfully',
-                'data': userAnswer,
-            }, 200
-        
-        except Exception as e:
-            print("Error:", str(e))
-            return ErrorMessageUtils.bad_request("Failed to save questionnaire answer. Please try again.")
+        return {
+            'status': 200,
+            'message': 'Questionnaire Answered Successfully',
+            'data': userAnswer,
+        }, 200
