@@ -1,10 +1,14 @@
+import random
+
 from flask import current_app
 from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, jwt_required, get_jwt
+from flask_mail import Message
 from datetime import timedelta
 
 from helpers.function_utils import DbUtils
 from helpers.error_message import ErrorMessageUtils
 from models.users_model import UsersModel
+from store.mail import Mail
 
 class UserRegisterService:
     def register_user(user_data):
@@ -82,3 +86,42 @@ class UserLoginService:
         
         else:
             return ErrorMessageUtils.not_found("The email you entered is not registered. Please sign up to create an account.")
+        
+class SendEmailOtpVerificationService:
+    def __init__(self):
+        self.mail = Mail()
+
+    @staticmethod
+    def generate_otp():
+        return random.randint(100000, 999999)
+    
+    def send_email_otp(self, email, otp_code):
+        try:
+            subject = "Reset Password OTP Verification"
+            recipients = [email]
+            html_body = f"""
+                <html>
+                    <body style="font-family: Arial, sans-serif; text-align: center;">
+                        <h2 style="color: #2c3e50;">Reset Password OTP Verification</h2>
+                            <p>Your OTP code is:</p>
+                        <h1 style="color: #e74c3c;">{otp_code}</h1>
+                            <p>Please use this code to complete your verification.</p>
+                            <p>If you didn't request this, please ignore this email.</p>
+                        <br>
+                            <p>Best regards,<br><strong>Serene Team</strong></p>
+                    </body>
+                </html>
+            """
+            message = Message(subject, recipients=recipients, html=html_body)
+            self.mail.send(message)
+        except Exception as e:
+            print(f"Email error: {str(e)}")
+            raise Exception("Failed to send email")
+        
+    def send_otp(self, data):
+        email = data["email"]
+        otp_code = self.generate_otp()
+        self.send_email_otp(email, otp_code)
+        return {
+            "otp_code": otp_code,
+        }
