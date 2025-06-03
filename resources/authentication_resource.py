@@ -1,18 +1,12 @@
-import random
-
-from flask import current_app, request
-from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, jwt_required, get_jwt
+from flask import request
+from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, get_jwt
 from flask_restful import Resource
-from flask_mail import Message
 from datetime import timedelta
-from werkzeug.security import check_password_hash
 
 from helpers.error_message import *
-from helpers.function_utils import DbUtils
 from models.users_model import *
 from schemas.authentication_schema import *
 from services.authentication_service import *
-from store.mail import Mail
 
 class UserRegisterResource(Resource):
     def post(self):
@@ -46,7 +40,7 @@ class UserLoginResource(Resource):
         return {
             "status": 200,
             "message": "Successfully logged in to your account.",
-            "data": logined_user
+            "data": logined_user 
         }, 200
 
 class UserLogoutResource(Resource):
@@ -67,6 +61,10 @@ class SendEmailOtpVerificationResource(Resource):
 
             service = SendEmailOtpVerificationService()
             otp_user = service.send_otp(data)
+
+            if isinstance(otp_user, tuple):
+                return otp_user
+
             return {
                 "status": 200,
                 "message": "OTP verification email has been sent successfully.",
@@ -84,23 +82,15 @@ class ResetPasswordResource(Resource):
         except:
             return ErrorMessageUtils.bad_request
 
-        userEmail = data['email']
-        newPassword = data['password']
+        reset_password = UserResetPasswordService.reset_password(data)
 
-        print(userEmail, newPassword)
-
-        if newPassword == "" or newPassword is None:
-            return ErrorMessageUtils.bad_request("New password cannot be empty. Please provide a valid password.")
+        if isinstance(reset_password, tuple):
+            return reset_password
         
-        try:
-            UsersModel.updateUserPassword(userEmail, newPassword)
-            return {
-                'status': 200,
-                'message': 'Your password has been successfully reset.'
-            }, 200
-        except Exception as e:
-            print("Validation error:", str(e))
-            return ErrorMessageUtils.bad_request("Unable to reset password. Please try again later.")
+        return {
+            "status": 200,
+            "message": "Password reset successfully. Please log in with your new password."
+        }, 200
 
 class RefreshTokenResource(Resource):
     @jwt_required(refresh=True) 

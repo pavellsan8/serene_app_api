@@ -1,9 +1,10 @@
 import random
 
 from flask import current_app
-from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, jwt_required, get_jwt
+from flask_jwt_extended import create_access_token, create_refresh_token
 from flask_mail import Message
 from datetime import timedelta
+from werkzeug.security import check_password_hash
 
 from helpers.function_utils import DbUtils
 from helpers.error_message import ErrorMessageUtils
@@ -47,7 +48,7 @@ class UserLoginService:
         if checkUser is not None:
             userId = checkUser.user_id 
             passwordRegistered = checkUser.user_password
-            passwordLoginCheck = UsersModel.check_password_hash(passwordRegistered, passwordInput)
+            passwordLoginCheck = check_password_hash(passwordRegistered, passwordInput)
             submitQuestionnaire = checkUser.submit_questionnaire
 
             if passwordLoginCheck:
@@ -76,7 +77,7 @@ class UserLoginService:
                         "access_token": access_token,
                         "refresh_token": refresh_token,
                         "submit_questionnaire": submitQuestionnaire,
-                    }, 200
+                    }
                 
                 except Exception as e:
                     print("Error:", str(e))
@@ -120,8 +121,35 @@ class SendEmailOtpVerificationService:
         
     def send_otp(self, data):
         email = data["email"]
+        userData = UsersModel.getEmailFirst(email)
+        if userData is None:
+            return ErrorMessageUtils.not_found("This email is not registered. Please check and try again.")
+
         otp_code = self.generate_otp()
         self.send_email_otp(email, otp_code)
         return {
             "otp_code": otp_code,
         }
+    
+class UserResetPasswordService:
+    def reset_password(data):
+        email = data['email']
+        newPassword = data['password']
+
+        if not newPassword:
+            return ErrorMessageUtils.bad_request("New password cannot be empty. Please provide a valid password.")
+        
+        userData = UsersModel.getEmailFirst(email)
+        oldPassword = userData.user_password if userData else None
+        passwordResetCheck = check_password_hash(oldPassword, newPassword)
+
+        try:
+            if passwordResetCheck:
+                return ErrorMessageUtils.bad_request("The new password cannot be the same as the old password. Please choose a different password.")
+            
+            UsersModel.updateUserPassword(email, newPassword)
+            return
+        
+        except Exception as e:
+            print("Error:", str(e))
+            return ErrorMessageUtils.bad_request("Unable to reset password. Please try again later.")
