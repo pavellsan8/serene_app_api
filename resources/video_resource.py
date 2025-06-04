@@ -1,15 +1,8 @@
-import datetime
-import re
-
 from flask_restful import Resource
-from flask import request, current_app
-from googleapiclient.discovery import build
-from flask_jwt_extended import jwt_required, get_jwt
+from flask import request
+from flask_jwt_extended import jwt_required
 
-from models.video_model import VideoModel
-from models.videofavourite_model import VideoFavouriteModel
 from helpers.error_message import ErrorMessageUtils
-from helpers.function_utils import DbUtils
 from schemas.user_profile_schema import UserFavouriteSchema
 from services.video_service import *
 
