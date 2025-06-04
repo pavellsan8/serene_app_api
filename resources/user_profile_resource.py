@@ -4,6 +4,7 @@ from flask_jwt_extended import jwt_required
 
 from models.users_model import UsersModel
 from schemas.user_profile_schema import *
+from services.user_profile_service import UserProfileService
 from helpers.error_message import ErrorMessageUtils
 
 class UserProfileDataResource(Resource):
@@ -12,21 +13,16 @@ class UserProfileDataResource(Resource):
         try:
             userEmail = request.args.get('email')
         except:
-            return ErrorMessageUtils.bad_request
+            return ErrorMessageUtils.bad_request('Invalid input data')
         
-        userData = UsersModel.getEmailFirst(userEmail)
-
-        if not userData:
-            return ErrorMessageUtils.not_found("User data not found.")
+        data = UserProfileService.get_user_profile(userEmail)
+        if isinstance(data, tuple):
+            return data
         
-        userName = userData.user_name
         return {
             "status": 200,
             "message": "User data retrieved successfully.",
-            "data": {
-                "name": userName,
-                "email": userEmail,
-            }
+            "data": data,
         }, 200
 
     @jwt_required()
@@ -34,40 +30,14 @@ class UserProfileDataResource(Resource):
         try:
             data = UserUpdateProfileSchema().load(request.get_json())
         except:
-            return ErrorMessageUtils.bad_request
+            return ErrorMessageUtils.bad_request('Invalid input data')
         
-        userName = data['name']
-        userEmail = data['email']
-
-        try:
-            UsersModel.updateUserProfile(userName, userEmail)
-            return {
-                "status": 200,
-                "message": "User profile updated successfully.",
-                "data": {
-                    "name": userName,
-                    "email": userEmail,
-                }
-            }, 200
-        except Exception as e:
-            print("Validation error:", str(e))
-            return ErrorMessageUtils.bad_request
+        updateData = UserProfileService.update_user_profile(data)
+        if isinstance(updateData, tuple):
+            return updateData
         
-    @jwt_required()
-    def delete(self):
-        try:
-            data = UserDataSchema().load(request.get_json())
-        except:
-            return ErrorMessageUtils.bad_request
-        
-        userEmail = data['email']
-        userData = UsersModel.getEmailFirst(userEmail)
-
-        if userData:
-            UsersModel.deleteUser(userData)
-            return {
-                "status": 200,
-                "message": "User data deleted successfully.",
-            }, 200
-        else:
-            return ErrorMessageUtils.not_found
+        return {
+            "status": 200,
+            "message": "User profile updated successfully.",
+            "data": updateData,
+        }, 200

@@ -42,11 +42,11 @@ class UsersModel(db.Model):
         return False
     
     @classmethod
-    def deleteUser(cls, email):
+    def updateUserProfile(cls, name, email):
         user = cls.query.filter_by(user_email=email).first()
         
         if user:
-            db.session.delete(user)
+            user.user_name = name
             db.session.commit()
             return True
 
