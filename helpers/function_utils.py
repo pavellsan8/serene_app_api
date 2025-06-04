@@ -1,3 +1,5 @@
+import re
+
 from store.db import db
 
 class DbUtils:
@@ -26,3 +28,12 @@ class DbUtils:
         except Exception as e:
             db.session.rollback()
             raise e
+
+class FeatureUtils:
+    @staticmethod
+    def extract_year(date):
+        if date == 'Unknown':
+            return date
+        
+        match = re.match(r'\d{4}', date)
+        return int(match.group(0)) if match else None
