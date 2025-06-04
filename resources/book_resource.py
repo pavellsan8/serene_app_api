@@ -9,7 +9,6 @@ from helpers.error_message import ErrorMessageUtils
 class GetBookListResource(Resource):
     @jwt_required()
     def get(self):
-
         books = GetBookListService.get_book_list()
         if isinstance(books, tuple):
             return books
@@ -23,7 +22,6 @@ class GetBookListResource(Resource):
 class GetBookListV2Resource(Resource):
     @jwt_required()
     def get(self):
-        
         data = GetBookListService.get_book_list_v2()
         if isinstance(data, tuple):
             return data
@@ -49,10 +47,8 @@ class BookFavouriteResource(Resource):
         return {
             'status': 200,
             'message': 'Book added to favourites successfully',
-            # 'user_id': userId,
-            # 'email': userEmail,
-            # 'book_id': bookId
-            'data': savedBook,
+            'email': savedBook['email'],
+            'book_id': savedBook['book_id'],
         }, 200
     
     @jwt_required()
@@ -69,13 +65,13 @@ class BookFavouriteResource(Resource):
         return {
             'status': 200,
             'message': 'Book removed from favourites successfully',
-            'data': removeBook,
+            'email': removeBook['email'],
+            'book_id': removeBook['book_id'],
         }, 200
 
 class GetBookFavouriteListResource(Resource):
     @jwt_required()
     def get(self):
-        
         data = GetBookFavouriteListService.get_book_favourite_list()
         if isinstance(data, tuple):
             return data

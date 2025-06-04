@@ -37,3 +37,10 @@ class FeatureUtils:
         
         match = re.match(r'\d{4}', date)
         return int(match.group(0)) if match else None
+    
+    @staticmethod
+    def format_duration(seconds):
+        minutes = (seconds % 3600) // 60
+        remaining_seconds = seconds % 60
+        
+        return f"{minutes:02}:{remaining_seconds:02}"
