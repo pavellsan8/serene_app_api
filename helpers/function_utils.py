@@ -44,3 +44,15 @@ class FeatureUtils:
         remaining_seconds = seconds % 60
         
         return f"{minutes:02}:{remaining_seconds:02}"
+    
+    @staticmethod
+    def parse_youtube_duration(duration):
+        hours_match = re.search(r'(\d+)H', duration)
+        minutes_match = re.search(r'(\d+)M', duration)
+        seconds_match = re.search(r'(\d+)S', duration)
+        
+        hours = int(hours_match.group(1)) if hours_match else 0
+        minutes = int(minutes_match.group(1)) if minutes_match else 0
+        seconds = int(seconds_match.group(1)) if seconds_match else 0
+        
+        return f"{hours:02d}:{minutes:02d}:{seconds:02d}"

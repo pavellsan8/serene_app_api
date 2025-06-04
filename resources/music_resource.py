@@ -1,15 +1,8 @@
-import datetime
-import requests
-import re
-
 from flask_restful import Resource
-from flask import request, current_app
-from flask_jwt_extended import jwt_required, get_jwt
+from flask import request
+from flask_jwt_extended import jwt_required
 
-from models.music_model import MusicModel
-from models.musicfavourite_model import MusicFavouriteModel
 from helpers.error_message import ErrorMessageUtils
-from helpers.function_utils import DbUtils
 from schemas.user_profile_schema import UserFavouriteSchema
 from services.music_service import *
 

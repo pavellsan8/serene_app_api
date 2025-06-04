@@ -140,7 +140,7 @@ class BookFavouriteService:
 
         favouriteData = BookFavouriteModel.getBookFirstFavourite(userId, bookId)
         if favouriteData:
-            return ErrorMessageUtils.bad_request('Book already in favourites.')
+            return ErrorMessageUtils.bad_request('Book already in favourites')
 
         try :
             favouriteData = BookFavouriteModel(
@@ -157,7 +157,7 @@ class BookFavouriteService:
         
         except Exception as e:
             print("Error saving data:", str(e))
-            return ErrorMessageUtils.internal_error('An error occurred while adding to favorites.')
+            return ErrorMessageUtils.internal_error('An error occurred while adding to favorites')
         
     def delete_book_from_favourite(data):
         claims = get_jwt()
