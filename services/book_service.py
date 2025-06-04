@@ -56,9 +56,7 @@ class GetBookListService:
         
         try:
             bookData = BookModel.getBookByFeelingId(userId)
-            return {
-                'data': bookData['data'],
-            }
+            return bookData['data'] if bookData and 'data' in bookData else []
 
         except Exception as e:
             print("Error fetching data:", str(e))
@@ -123,9 +121,7 @@ class GetBookFavouriteListService:
         
         try:
             bookData = BookFavouriteModel.getAllBookFavourites(userId)
-            return {
-                'data': bookData['data'],
-            }
+            return bookData['data'] if bookData and 'data' in bookData else []
 
         except Exception as e:
             print("Error fetching data:", str(e))

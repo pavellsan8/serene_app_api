@@ -57,9 +57,7 @@ class GetMusicListService:
         
         try:
             musicData = MusicModel.getMusicByFeelingId(userId)
-            return {
-                'data': musicData['data'],
-            }
+            return musicData['data'] if musicData and 'data' in musicData else []
 
         except Exception as e:
             print("Error fetching data:", str(e))
@@ -121,9 +119,7 @@ class GetMusicFavouriteListService:
         
         try:
             musicData = MusicFavouriteModel.getAllMusicFavourites(userId)
-            return {
-                'data': musicData['data'],
-            }, 200
+            return musicData['data'] if musicData and 'data' in musicData else []
 
         except Exception as e:
             print("Error fetching data:", str(e))

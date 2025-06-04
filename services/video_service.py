@@ -98,9 +98,7 @@ class GetVideoListService:
         
         try:
             videoData = VideoModel.getVideoByFeelingId(userId)
-            return {
-                'data': videoData['data'],
-            }
+            return videoData['data'] if videoData and 'data' in videoData else []
 
         except Exception as e:
             print("Error fetching data:", str(e))
@@ -178,9 +176,7 @@ class GetVideoFavouriteListService:
         
         try:
             videoData = VideoFavouriteModel.getAllVideoFavourites(userId)
-            return {
-                'data': videoData['data'],
-            }
+            return videoData['data'] if videoData and 'data' in videoData else []
 
         except Exception as e:
             print("Error fetching data:", str(e))
