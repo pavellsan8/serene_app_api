@@ -34,3 +34,19 @@ class UserQuestionnaireAnswerResource(Resource):
             'message': 'Questionnaire Answered Successfully',
             'data': userAnswer,
         }, 200
+    
+    def put(self):
+        try: 
+            data = UserQuestionnaireAnswerSchema().load(request.get_json())
+        except:
+            return ErrorMessageUtils.bad_request()
+        
+        userAnswer = UserQuestionnaireAnswerService.update_answer(data)
+        if isinstance(userAnswer, dict) and 'error' in userAnswer:
+            return userAnswer, 400
+
+        return {
+            'status': 200,
+            'message': 'Questionnaire Answered Successfully',
+            'data': userAnswer,
+        }, 200
