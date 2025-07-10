@@ -28,8 +28,16 @@ class UserRegisterService:
                 )
 
                 try:
-                    DbUtils.save_to_db(userRegisData)
-                    return userRegisData
+                    # DbUtils.save_to_db(userRegisData)
+
+                    otp_service = SendEmailOtpVerificationService()
+                    otp_code = otp_service.generate_otp()
+                    otp_service.send_registration_email_otp(emailRegis, otp_code)
+
+                    return {
+                        "user": userRegisData,
+                        "otp_code": otp_code
+                    }
                 
                 except Exception as e:
                     print("Error:", str(e))
@@ -96,7 +104,7 @@ class SendEmailOtpVerificationService:
     def generate_otp():
         return random.randint(100000, 999999)
     
-    def send_email_otp(self, email, otp_code):
+    def send_forget_password_email_otp(self, email, otp_code):
         try:
             subject = "Reset Password OTP Verification"
             recipients = [email]
@@ -118,6 +126,29 @@ class SendEmailOtpVerificationService:
         except Exception as e:
             print(f"Email error: {str(e)}")
             raise Exception("Failed to send email")
+        
+    def send_registration_email_otp(self, email, otp_code):
+        try:
+            subject = "Account Registration OTP Verification"
+            recipients = [email]
+            html_body = f"""
+                <html>
+                    <body style="font-family: Arial, sans-serif; text-align: center;">
+                        <h2 style="color: #2c3e50;">Account Registration OTP Verification</h2>
+                            <p>Thank you for registering. To complete your registration, please use the OTP code below:</p>
+                        <h1 style="color: #0057FF;">{otp_code}</h1>
+                            <p>Enter this code in the app to verify your email address.</p>
+                            <p>If you did not request to register, please ignore this email.</p>
+                        <br>
+                            <p>Best regards,<br><strong>Serene Team</strong></p>
+                    </body>
+                </html>
+            """
+            message = Message(subject, recipients=recipients, html=html_body)
+            self.mail.send(message)
+        except Exception as e:
+            print(f"Email error: {str(e)}")
+            raise Exception("Failed to send registration email")
         
     def send_otp(self, data):
         email = data["email"]

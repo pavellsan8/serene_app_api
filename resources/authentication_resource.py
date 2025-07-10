@@ -22,7 +22,8 @@ class UserRegisterResource(Resource):
 
         return {
             "status": 200,
-            "message": "Successfully registered your account."
+            "message": "Registration successful. Please verify your email using the OTP sent.",
+            "otp_code": registered_user["otp_code"],
         }, 200
 
 class UserLoginResource(Resource):
