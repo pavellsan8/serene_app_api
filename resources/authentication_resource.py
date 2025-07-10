@@ -74,7 +74,7 @@ class SendEmailOtpVerificationResource(Resource):
 
         except Exception as e:
             print("Validation error:", str(e))
-            return ErrorMessageUtils.bad_request("Please provide a valid email address.")
+            return ErrorMessageUtils.bad_request("Please ensure the email address you provided is correct and active.")
         
 class ResetPasswordResource(Resource):
     def put(self):

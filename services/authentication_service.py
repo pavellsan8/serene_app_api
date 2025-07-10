@@ -28,7 +28,7 @@ class UserRegisterService:
                 )
 
                 try:
-                    # DbUtils.save_to_db(userRegisData)
+                    DbUtils.save_to_db(userRegisData)
 
                     otp_service = SendEmailOtpVerificationService()
                     otp_code = otp_service.generate_otp()
